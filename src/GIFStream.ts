@@ -18,6 +18,10 @@ import { SimpleBlock } from "./SimpleBlock";
  *    <Special-Purpose Block> ::= Application Extension | Comment Extension
  */
 
+/**
+ * GIF Spec use little endian.
+ */
+
 class GIFStream {
     private header: Int8Array = SimpleBlock.Header()
     private trailer: Int8Array = SimpleBlock.Trailer()

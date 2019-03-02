@@ -6,11 +6,11 @@ export class LogicalScreen {
          *       7 6 5 4 3 2 1 0        Field Name                    Type
          *      +---------------+
          *   0  |               |       Logical Screen Width          Unsigned
-         *      +-             -+        (* Little endian)
+         *      +-             -+       
          *   1  |               |
          *      +---------------+
          *   2  |               |       Logical Screen Height         Unsigned
-         *      +-             -+        (* Little endian)
+         *      +-             -+       
          *   3  |               |
          *      +---------------+
          *   4  | |     | |     |       <Packed Fields>               See below
@@ -20,10 +20,10 @@ export class LogicalScreen {
          *   6  |               |       Pixel Aspect Ratio            Byte
          *      +---------------+
          *
-         *    <Packed Fields>   =      Global Color Table Flag       1 Bit
-         *                             Color Resolution              3 Bits
-         *                             Sort Flag                     1 Bit
-         *                             Size of Global Color Table    3 Bits
+         *      <Packed Fields>  =      Global Color Table Flag       1 Bit
+         *                              Color Resolution              3 Bits
+         *                              Sort Flag                     1 Bit
+         *                              Size of Global Color Table    3 Bits
          */
 
         const block = new Uint8Array(7)
