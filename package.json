@@ -1,0 +1,12 @@
+{
+  "name": "structed-gif-encoder",
+  "version": "working on",
+  "description": "The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript.",
+  "scripts": {},
+  "author": "wkblack11@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3333"
+  }
+}
