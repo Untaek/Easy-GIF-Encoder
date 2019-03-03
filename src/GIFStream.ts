@@ -1,4 +1,9 @@
 import { SimpleBlock } from "./SimpleBlock";
+import { LogicalScreen } from "./LogicalScreen";
+
+import * as fs from 'fs'
+import { LZW } from "./LZW";
+import { UniformQuant } from "./quantization/UniformQuant";
 
 /**
  *                      [ GIF Grammar ]
@@ -22,7 +27,45 @@ import { SimpleBlock } from "./SimpleBlock";
  * GIF Spec use little endian.
  */
 
-class GIFStream {
-    private header: Int8Array = SimpleBlock.Header()
-    private trailer: Int8Array = SimpleBlock.Trailer()
+type QuantizationOptions = {
+    method: 'uniform' | 'neu'
+}
+
+export class GIFStream {
+
+    static encode(path: string, buf: ArrayBuffer, w: number, h: number, options: QuantizationOptions) {
+        let quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
+        
+        const pixels = this.reduceBitTo16(buf, w, h)
+        const colorTable = quantizationAlgorithm.fromBuffer(pixels, w, h)
+        const mappedPixels = quantizationAlgorithm.map(pixels, colorTable, w, h)
+
+        LZW.compress(colorTable, pixels)
+
+        const ws = fs.createWriteStream('result.gif')
+        ws.write(Buffer.from(SimpleBlock.Header()))
+        ws.write(Buffer.from(LogicalScreen.LogicalScreenDescriptor(w, h)))
+        ws.write(Buffer.from(SimpleBlock.Trailer()))
+        ws.close()
+    }
+
+    private static chooseQuantizationAlgorithm(options: QuantizationOptions) {
+        switch(options.method) {
+            case 'neu':
+            case 'uniform': return UniformQuant
+            default: return UniformQuant
+        }
+    }
+
+    private static reduceBitTo16(buf: ArrayBuffer, w: number, h: number) {
+        let pixels: Uint8Array = new Uint8Array(buf)
+
+        const dimension = pixels.length / w / h
+
+        if(dimension == 4) {
+            pixels = pixels.filter((_, i) => (i + 1) % 4)
+        }
+
+        return pixels
+    }
 }

@@ -33,4 +33,15 @@ export class SimpleBlock {
  
         return new Int8Array([0x3B])
     }
+
+    static BlockTerminator() {
+        /**
+         *    7 6 5 4 3 2 1 0        Field Name                    Type
+         *   +---------------+
+         * 0 |               |       Block Terminator              Byte
+         *   +---------------+
+         */
+
+        return new Int8Array([0])
+    }
 }

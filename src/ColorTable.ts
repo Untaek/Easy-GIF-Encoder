@@ -1,4 +1,10 @@
+import { RGB } from "./quantization/BaseQuant";
+
 export class ColorTable {
+    table: RGB[]
+
+    private constructor() {}
+    
     static gen() {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
@@ -22,6 +28,6 @@ export class ColorTable {
          * 767 |               |       Blue 255                      Byte
          *     +===============+
          */
-        return new Int8Array(768)
+        return new Uint8Array(768)
     }
 }

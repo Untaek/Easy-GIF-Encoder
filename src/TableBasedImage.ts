@@ -1,7 +1,7 @@
 import { ColorTable } from "./ColorTable";
 
 export class TableBasedImage {
-    static ImageDescriptor() {
+    static ImageDescriptor(w: number, h: number) {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
          *     +---------------+
@@ -33,6 +33,19 @@ export class TableBasedImage {
          *                             Size of Local Color Table     3 Bits
          */
 
+        const block = new Uint8Array(10)
+        block[0] = 0x2C
+        block[1] = 0
+        block[2] = 0
+        block[3] = 0
+        block[4] = 0
+        block[5] = w & 255
+        block[6] = w >> 8
+        block[7] = h & 255
+        block[8] = h >> 8
+        block[9] = 0xE0
+
+        return block
     }
 
     static ImageData() {
@@ -48,6 +61,44 @@ export class TableBasedImage {
          *     |               |
          *     +===============+
          */
+
+        const codeSize = 8
+        
+    }
+
+    static SubBlock(chunk: Uint8Array) {
+        /**
+         *      7 6 5 4 3 2 1 0        Field Name                    Type
+         *     +---------------+
+         *  0  |               |       Block Size                    Byte
+         *     +---------------+
+         *  1  |               |
+         *     +-             -+
+         *  2  |               |
+         *     +-             -+
+         *  3  |               |
+         *     +-             -+
+         *     |               |       Data Values                   Byte
+         *     +-             -+
+         * up  |               |
+         *     +-   . . . .   -+
+         * to  |               |
+         *     +-             -+
+         *     |               |
+         *     +-             -+
+         * 255 |               |
+         *     +---------------+
+         */
+
+        if(chunk.length > 255) {
+            throw Error('SubBlock Data length is over 255')
+        }
+
+        const block = new Uint8Array(chunk.length + 1)
+        block[0] = chunk.length
+        block.set(chunk, 1)
+
+        return block
     }
 
     static LocalColorTable() {
