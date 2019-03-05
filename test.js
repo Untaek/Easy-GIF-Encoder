@@ -11,8 +11,5 @@ console.log(bitmap.data.length)
 console.log(bitmap.width)
 console.log(bitmap.height)
 
-const quant = new sq.UniformQuant().fromBuffer(bitmap.data, bitmap.width, bitmap.height)
-const gifStream = new gif.GIFStream()
-
-gifStream.gen(bitmap.width, bitmap.height)
-gifStream.encode()
+const gifStream = gif.GIFStream.encode('result.gif', bitmap.data, bitmap.width, bitmap.height, {method: 'uniform'})
+// const gifStream = new gif.GIFStream().encode('result.gif', bitmap.data, bitmap.width, bitmap.height, {method: 'uniform'})

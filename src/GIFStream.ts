@@ -1,9 +1,10 @@
-import { SimpleBlock } from "./SimpleBlock";
-import { LogicalScreen } from "./LogicalScreen";
+import { SimpleBlock } from "./block/SimpleBlock";
+import { LogicalScreen } from "./block/LogicalScreen";
 
 import * as fs from 'fs'
 import { LZW } from "./LZW";
 import { UniformQuant } from "./quantization/UniformQuant";
+import { TableBasedImage } from "./block/TableBasedImage";
 
 /**
  *                      [ GIF Grammar ]
@@ -35,16 +36,26 @@ export class GIFStream {
 
     static encode(path: string, buf: ArrayBuffer, w: number, h: number, options: QuantizationOptions) {
         let quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
-        
-        const pixels = this.reduceBitTo16(buf, w, h)
-        const colorTable = quantizationAlgorithm.fromBuffer(pixels, w, h)
-        const mappedPixels = quantizationAlgorithm.map(pixels, colorTable, w, h)
 
-        LZW.compress(colorTable, pixels)
+        const pixels = this.reduceBitTo16(buf, w, h)
+        const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
+
+        
+        const imageDescriptor = TableBasedImage.ImageDescriptor(w, h)
+        // const data = TableBasedImage.gen(imageDescriptor, compressed)
 
         const ws = fs.createWriteStream('result.gif')
         ws.write(Buffer.from(SimpleBlock.Header()))
         ws.write(Buffer.from(LogicalScreen.LogicalScreenDescriptor(w, h)))
+        ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
+        ws.write(Buffer.from(imageDescriptor))
+        
+        // const compressed = LZW.compress(quantizationResult)
+        // for(let i=0; i< compressed.length; i++) {
+        //     ws.write(Buffer.from(compressed[i]))
+        // }
+        
+        ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))
         ws.close()
     }
@@ -63,7 +74,7 @@ export class GIFStream {
         const dimension = pixels.length / w / h
 
         if(dimension == 4) {
-            pixels = pixels.filter((_, i) => (i + 1) % 4)
+            pixels = pixels.filter((_, i) => (i + 1) % 4 != 0)
         }
 
         return pixels

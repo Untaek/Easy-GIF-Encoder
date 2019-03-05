@@ -1,33 +1,21 @@
 import { RGB } from "./quantization/BaseQuant";
 
 export class ColorTable {
-    table: RGB[]
+    colorTable: RGB[]
+    idxTable = []
+    codeTable = new Map<string, number>()
 
-    private constructor() {}
-    
-    static gen() {
-        /**
-         *      7 6 5 4 3 2 1 0        Field Name                    Type
-         *     +===============+
-         *  0  |               |       Red 0                         Byte
-         *     +-             -+
-         *  1  |               |       Green 0                       Byte
-         *     +-             -+
-         *  2  |               |       Blue 0                        Byte
-         *     +-             -+
-         *  3  |               |       Red 1                         Byte
-         *     +-             -+
-         *     |               |       Green 1                       Byte
-         *     +-             -+
-         * up  |               |
-         *     +-   . . . .   -+       ...
-         * to  |               |
-         *     +-             -+
-         *     |               |       Green 255                     Byte
-         *     +-             -+
-         * 767 |               |       Blue 255                      Byte
-         *     +===============+
-         */
-        return new Uint8Array(768)
+    clear() {
+        this.idxTable = []
+        this.codeTable.clear()
+    }
+
+    find(code: string | number) {
+        return this.codeTable.has(code.toString())
+    }
+
+    put(code: string | number) {
+        this.codeTable.set(code.toString(), this.idxTable.length)
+        this.idxTable.push(code)
     }
 }

@@ -1,4 +1,6 @@
-import { BaseQuant, RGB } from "./BaseQuant";
+import { BaseQuant, RGB, QuantizationResult } from "./BaseQuant";
+import { ColorTable } from "../ColorTable";
+import { writeFileSync, appendFileSync } from "fs";
 
 class Region extends RGB {
     count = 0
@@ -31,12 +33,13 @@ export class UniformQuant extends BaseQuant {
     private static gDist = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
     private static bDist = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
     
-    static fromBuffer(pixels: Uint8Array, w: number, h: number): RGB[] {
-        
+    static fromBuffer(pixels: Uint8Array, w: number, h: number): QuantizationResult {
         const regions: Region[] = new Array(UniformQuant.COLOR_SPACE).map(() => new Region())
+        const indexStream = new Uint8Array(pixels.length / 3)
 
         for(let i = 0; i < UniformQuant.COLOR_SPACE; i++) {
             regions[i] = new Region()
+            regions[i].index = i.toString()
         }
 
         let r = 0
@@ -44,24 +47,23 @@ export class UniformQuant extends BaseQuant {
         let b = 0
         let index = 0
 
-        for(let i = 0; i < w; i += 3) {
-            for(let j = 0; j < h; j += 3) {
-                r = pixels[i * w + j]
-                g = pixels[i * w + j + 1]
-                b = pixels[i * w + j + 2]
+        for(let i = 0; i < pixels.length; i+=3) {
+            r = pixels[i]
+            g = pixels[i + 1]
+            b = pixels[i + 2]
 
-                index = Math.floor((r / UniformQuant.rDist) + (g / UniformQuant.gDist * 8) + (b / UniformQuant.bDist * 8 * 4))
-
-                regions[index].add(r, g, b)
-            }
+            index = ~~((r / UniformQuant.rDist) + (g / UniformQuant.gDist * 8) + (b / UniformQuant.bDist * 8 * 4))
+            indexStream[~~(i/3)] = index
+            regions[index].add(r, g, b)
         }
 
         regions.forEach(region => region.setAverage())
-        
-        return regions.sort((a, b) => a.count - b.count)
+
+        return {
+            globalColorTable: regions,
+            indexStream: indexStream
+        }
     }
 
-    static map(pixels: Uint8Array, colorTable: RGB[], w: number, h: number) {
-        return pixels
-    }
+    static map(pixels: Uint8Array, colorTable: RGB[], w: number, h: number) {}
 }

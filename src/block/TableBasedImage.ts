@@ -1,6 +1,17 @@
-import { ColorTable } from "./ColorTable";
+import { ColorTable } from "./ColorTableBlock";
+import { SimpleBlock } from "./SimpleBlock";
+import { RGB } from "../quantization/BaseQuant";
 
 export class TableBasedImage {
+
+    // static gen(imageDescriptor: Uint8Array, compressed: Uint8Array[], codeSize: number = 12) {
+    //     const data = new Uint8Array(10 + 255 * compressed.length + 2)
+
+        
+
+    //     SimpleBlock.BlockTerminator()
+    // } 
+
     static ImageDescriptor(w: number, h: number) {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
@@ -61,12 +72,9 @@ export class TableBasedImage {
          *     |               |
          *     +===============+
          */
-
-        const codeSize = 8
-        
     }
 
-    static SubBlock(chunk: Uint8Array) {
+    static SubBlock(chunk: Uint8Array, len: number) {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
          *     +---------------+
@@ -90,18 +98,18 @@ export class TableBasedImage {
          *     +---------------+
          */
 
-        if(chunk.length > 255) {
+        if(chunk.length > 255 || len > 255) {
             throw Error('SubBlock Data length is over 255')
         }
 
-        const block = new Uint8Array(chunk.length + 1)
-        block[0] = chunk.length
+        const block = new Uint8Array(len + 1)
+        block[0] = len
         block.set(chunk, 1)
 
         return block
     }
 
-    static LocalColorTable() {
-        return ColorTable.gen()
+    static LocalColorTable(rgb: RGB[]) {
+        return ColorTable.gen(rgb)
     }
 }

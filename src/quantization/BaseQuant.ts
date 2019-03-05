@@ -1,12 +1,18 @@
 
 export class RGB {
-    red: number
-    green: number
-    blue: number
+    red: number = 0
+    green: number = 0
+    blue: number = 0
+    index: string = "0"
+}
+
+export interface QuantizationResult {
+    globalColorTable: RGB[]
+    indexStream: Uint8Array
 }
 
 export class BaseQuant {
-    public static fromBuffer(buf: ArrayBuffer, w: number, h: number): RGB[] {
+    public static fromBuffer(buf: ArrayBuffer, w: number, h: number): QuantizationResult {
         throw Error('Not implemented!')
     }
 

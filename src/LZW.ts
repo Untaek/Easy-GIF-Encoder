@@ -1,5 +1,5 @@
-import { ColorTable } from "./ColorTable";
-import { RGB } from "./quantization/BaseQuant";
+import { RGB, QuantizationResult } from "./quantization/BaseQuant";
+import { TableBasedImage } from "./block/TableBasedImage";
 
 export class LZW {
 
@@ -38,17 +38,73 @@ export class LZW {
         
     */
 
-    static compress(colorTable: RGB[], pixels: Uint8Array, minSize: number = 8) {
-        let r: number
-        let g: number
-        let b: number
+    // static compress(quantizationResult: QuantizationResult, minSize: number = 6) {
+    //     const ct = quantizationResult.globalColorTable
+    //     const pxs = quantizationResult.indexStream
 
-        for(let i = 0; i < pixels.length; i += 3) {
-            r = pixels[i]
-            g = pixels[i + 1]
-            b = pixels[i + 2]
+    //     const CLEAR_CODE = 2 << minSize
+    //     const INFORMATION_CODE = CLEAR_CODE + 1
+    //     const BYTE = 8
 
-            
-        }
-    }
+    //     const idxTable = []
+    //     const codeTable = new Map<string, number>()
+
+    //     const compressed: Uint8Array[] = []
+
+    //     const subBlock = new Uint8Array(255)
+    //     let len = 0
+
+    //     let idxBuf = []
+    //     let binQue = [0, 0, 0, 0, 0, 0, 1]
+    //     let k = 0
+        
+    //     while(k < pxs.length) {
+    //         const raw = idxBuf.join(',')
+    //         const px = pxs[k]
+
+    //         if(!raw.includes(',') || codeTable.has(raw)) {
+    //             idxBuf.push(px.index)
+    //             k++
+    //             continue
+    //         }
+
+    //         idxBuf = []
+
+    //         this.put(idxTable, codeTable, raw)
+    //         let code = codeTable.get(raw) || parseInt(raw)
+
+    //         while (code > 0) {
+    //             binQue.push(code % 2)
+    //             code = ~~(code / 2)
+
+    //             let byte = 0
+    //             // EOF 처리 필요
+    //             if(binQue.length == BYTE) {
+    //                 for(let i = BYTE; i > 0; i--) {
+    //                     byte += 2**(i-1) * binQue.pop()
+    //                 }
+    //                 subBlock[len] = byte
+    //                 len++
+
+    //                 if(k > pxs.length - 5) {
+    //                     console.log('end', len)
+    //                     console.log(codeTable.size)
+    //                     compressed.push(TableBasedImage.SubBlock(subBlock.subarray(0, len), len))
+    //                     return compressed
+    //                 }
+
+    //                 if(len == 255) {
+    //                     compressed.push(TableBasedImage.SubBlock(subBlock, len))
+    //                     len = 0
+    //                 } 
+    //             }
+    //         }
+    //     }
+    //     return compressed
+    // }
+
+    // private static put(idxTable: string[], codeTable: Map<string, number>, code: string) {
+    //     codeTable.set(code, idxTable.length + 255)
+    //     idxTable.push(code)
+    // }
 }

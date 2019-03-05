@@ -1,4 +1,5 @@
-import { ColorTable } from "./ColorTable";
+import { ColorTable } from "./ColorTableBlock";
+import { RGB } from "../quantization/BaseQuant";
 
 export class LogicalScreen {
     static LogicalScreenDescriptor(w: number, h: number) {
@@ -32,13 +33,13 @@ export class LogicalScreen {
         block[2] = h & 255
         block[3] = h >> 8
         block[4] = 0xF7
-        block[5] = 0xFF
+        block[5] = 0x00
         block[6] = 0x00
 
         return block
     }
 
-    static GlobalColorTable() {
-        return ColorTable.gen()
+    static GlobalColorTable(rgb: RGB[]) {
+        return ColorTable.gen(rgb)
     }
 }
