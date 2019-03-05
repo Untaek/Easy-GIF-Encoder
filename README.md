@@ -30,7 +30,7 @@ https://www.w3.org/Graphics/GIF/spec-gif89a.txt
 LZW compression used to encode/decode a GIF file by Bob Montgomery  
 http://giflib.sourceforge.net/lzgif.txt
 
-What's In A GIF (Useful informaion to programming)  
+What's In A GIF (Useful information to programming)  
 http://giflib.sourceforge.net/whatsinagif/index.html
 
 GIF Wikipedia  

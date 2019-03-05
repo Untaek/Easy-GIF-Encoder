@@ -2,9 +2,9 @@ import { SimpleBlock } from "./block/SimpleBlock";
 import { LogicalScreen } from "./block/LogicalScreen";
 
 import * as fs from 'fs'
-import { LZW } from "./LZW";
 import { UniformQuant } from "./quantization/UniformQuant";
 import { TableBasedImage } from "./block/TableBasedImage";
+import { LZW2 } from "./LZW2";
 
 /**
  *                      [ GIF Grammar ]
@@ -42,7 +42,6 @@ export class GIFStream {
 
         
         const imageDescriptor = TableBasedImage.ImageDescriptor(w, h)
-        // const data = TableBasedImage.gen(imageDescriptor, compressed)
 
         const ws = fs.createWriteStream('result.gif')
         ws.write(Buffer.from(SimpleBlock.Header()))
@@ -50,10 +49,10 @@ export class GIFStream {
         ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
         ws.write(Buffer.from(imageDescriptor))
         
-        // const compressed = LZW.compress(quantizationResult)
-        // for(let i=0; i< compressed.length; i++) {
-        //     ws.write(Buffer.from(compressed[i]))
-        // }
+        const compressed = LZW2.compress(quantizationResult.indexStream)
+        for(let i=0; i< compressed.length; i++) {
+            ws.write(Buffer.from(compressed[i]))
+        }
         
         ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))

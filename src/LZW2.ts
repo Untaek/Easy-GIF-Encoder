@@ -1,4 +1,5 @@
 import { QuantizationResult } from "./quantization/BaseQuant";
+import { TableBasedImage } from "./block/TableBasedImage";
 
 export class LZW2 {
 
@@ -44,26 +45,49 @@ export class LZW2 {
 
     */
 
-    static compress(indexStream: Uint8Array, minSize: number = 8) {
+    static compress(indexStream: Uint8Array, minSize: number = 12) {
         const CLEAR_CODE = 2 << minSize
         const INFORMATION_CODE = CLEAR_CODE + 1
         const EOF = indexStream.length
+        const MAX_SUB_BLOCK = 255
 
         let tbSize = 2 << minSize + 2
         let colorTable = new Map<string, number>()
         let current = 1
 
-        const binaryBuffer = []
-        const idxBuffer = []
+        const idxBuffer: number[] = []
+
+        const binaryBuffer: number[] = []
+        let byte = 0x00
+        let byteIdx = 0 // 0 ~ 7
+        let chunkGenFlag = false
+
+        const subBlock = new Uint8Array(MAX_SUB_BLOCK)
+        let subBlockLength = 0
+
+        // 설계를 stream 으로 바꿔야 한다
+        // 구현을 위한 임시 용도
+        const imageData: Uint8Array[] = []
+
+        const numToBinaryBuffer = (num: number) => {
+            let val = num
+            while(val > 0) {
+                binaryBuffer.push(val % 2)
+                val = ~~(val >> 2)
+            }
+        }
 
         // Clear code 삽입
+        numToBinaryBuffer(CLEAR_CODE)
+
+        // 압축 init
         idxBuffer[0] = indexStream[0]
         
         // loop
         while(current < EOF) {
             const idx = indexStream[current]
-            const raw = idxBuffer.map(v => `#${v}`).join('')
-            const lookup = `${raw}#${idx}`
+            const saved = idxBuffer.map(v => `#${v}`).join('')
+            const lookup = `${saved}#${idx}`
 
             // idxBuffer + idx가 table에 있으면
             // idx 를 idxBuffer에 넣기
@@ -79,15 +103,46 @@ export class LZW2 {
             // idxBuffer에 idx 넣기
             tbSize++
             colorTable.set(lookup, tbSize)
+
+            let code = tbSize
+
+            if(idxBuffer.length == 1) {
+                code = idxBuffer[0]
+            }
             idxBuffer[0] = idx
             idxBuffer.length = 1
 
             // 버퍼 처리 (block 생성)
             // EOF 처리
-            let code = tbSize
-            while(code > 0) {
 
+            numToBinaryBuffer(code)
+
+            while(binaryBuffer.length) {
+                byte += binaryBuffer.pop() ** byteIdx
+                byteIdx++
+
+                if(byteIdx == 8) {
+                    byte = 0x00
+                    byteIdx = 0
+
+                    subBlock[subBlockLength] = byte
+                    subBlockLength++
+
+                    if(current == EOF - 1) {
+                        numToBinaryBuffer(INFORMATION_CODE)
+                        chunkGenFlag = true
+                    }
+
+                    if(chunkGenFlag || subBlockLength == MAX_SUB_BLOCK) {
+                        imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
+                        subBlockLength = 0
+
+                        chunkGenFlag = false
+                    }
+                }
             }
         }
+
+        return imageData
     }
 }
