@@ -9,11 +9,11 @@
             "request": "launch",
             "name": "Launch Program",
             "protocol": "inspector",
-            "args": ["${relativeFile}"],
+            "args": ["test_image.jpg"],
             "cwd": "${workspaceRoot}",
             "runtimeArgs": ["-r", "ts-node/register"],
             "internalConsoleOptions": "openOnSessionStart",
-            "program": "${workspaceRoot}/test.js"
+            "program": "${workspaceRoot}/test.js",
         }
     ]
 }

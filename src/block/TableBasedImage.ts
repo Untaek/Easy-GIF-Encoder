@@ -4,14 +4,6 @@ import { RGB } from "../quantization/BaseQuant";
 
 export class TableBasedImage {
 
-    // static gen(imageDescriptor: Uint8Array, compressed: Uint8Array[], codeSize: number = 12) {
-    //     const data = new Uint8Array(10 + 255 * compressed.length + 2)
-
-        
-
-    //     SimpleBlock.BlockTerminator()
-    // } 
-
     static ImageDescriptor(w: number, h: number) {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
@@ -54,7 +46,7 @@ export class TableBasedImage {
         block[6] = w >> 8
         block[7] = h & 255
         block[8] = h >> 8
-        block[9] = 0xE0
+        block[9] = 0x00
 
         return block
     }
@@ -104,7 +96,7 @@ export class TableBasedImage {
 
         const block = new Uint8Array(len + 1)
         block[0] = len
-        block.set(chunk, 1)
+        block.set(chunk.subarray(0, len), 1)
 
         return block
     }

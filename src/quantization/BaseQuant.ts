@@ -3,7 +3,7 @@ export class RGB {
     red: number = 0
     green: number = 0
     blue: number = 0
-    index: string = "0"
+    index: number = 0
 }
 
 export interface QuantizationResult {

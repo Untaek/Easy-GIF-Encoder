@@ -7,18 +7,20 @@ class Region extends RGB {
     
     setAverage() {
         if(this.count == 0) {
-            return
+            return this
         }
         this.red = Math.floor(this.red / this.count)
         this.green = Math.floor(this.green / this.count)
         this.blue = Math.floor(this.blue / this.count)
+
+        return this
     }
 
     add(r: number, g: number, b: number) {
         this.red += r
         this.green += g
         this.blue += b
-        this.count += 1
+        this.count++
     }
 }
 
@@ -39,7 +41,7 @@ export class UniformQuant extends BaseQuant {
 
         for(let i = 0; i < UniformQuant.COLOR_SPACE; i++) {
             regions[i] = new Region()
-            regions[i].index = i.toString()
+            regions[i].index = i
         }
 
         let r = 0
@@ -47,20 +49,28 @@ export class UniformQuant extends BaseQuant {
         let b = 0
         let index = 0
 
+        const tbl = new Map<number, number>()
+
         for(let i = 0; i < pixels.length; i+=3) {
             r = pixels[i]
             g = pixels[i + 1]
             b = pixels[i + 2]
 
-            index = ~~((r / UniformQuant.rDist) + (g / UniformQuant.gDist * 8) + (b / UniformQuant.bDist * 8 * 4))
-            indexStream[~~(i/3)] = index
-            regions[index].add(r, g, b)
+            index = ~~((~~(r / UniformQuant.rDist)+1) * (~~(g / UniformQuant.gDist)+1) * (~~(b / UniformQuant.bDist)+1))
+            
+            if(!tbl.has(index)){
+                tbl.set(index, tbl.size)
+            }
+            indexStream[i/3] = tbl.get(index)
+
+            regions[tbl.get(index)].add(r, g, b)
         }
 
-        regions.forEach(region => region.setAverage())
+        const fittedColorTable = regions
+            .map(val => val.setAverage())
 
         return {
-            globalColorTable: regions,
+            globalColorTable: fittedColorTable,
             indexStream: indexStream
         }
     }

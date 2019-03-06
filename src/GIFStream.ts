@@ -4,7 +4,7 @@ import { LogicalScreen } from "./block/LogicalScreen";
 import * as fs from 'fs'
 import { UniformQuant } from "./quantization/UniformQuant";
 import { TableBasedImage } from "./block/TableBasedImage";
-import { LZW2 } from "./LZW2";
+import { LZW } from "./LZW";
 
 /**
  *                      [ GIF Grammar ]
@@ -39,7 +39,6 @@ export class GIFStream {
 
         const pixels = this.reduceBitTo16(buf, w, h)
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
-
         
         const imageDescriptor = TableBasedImage.ImageDescriptor(w, h)
 
@@ -49,11 +48,11 @@ export class GIFStream {
         ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
         ws.write(Buffer.from(imageDescriptor))
         
-        const compressed = LZW2.compress(quantizationResult.indexStream)
+        const compressed = LZW.compress(quantizationResult)
         for(let i=0; i< compressed.length; i++) {
             ws.write(Buffer.from(compressed[i]))
         }
-        
+
         ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))
         ws.close()

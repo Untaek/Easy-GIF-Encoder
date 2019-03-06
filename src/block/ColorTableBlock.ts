@@ -26,13 +26,12 @@ export class ColorTable {
          */
 
         const block = new Uint8Array(rgb.length*3)
-        console.log(block.length)
         
-        for(let i=0; i < rgb.length; i++) {
-            block[i*3] = rgb[i].red
-            block[i*3+1] = rgb[i].green
-            block[i*3+2] = rgb[i].blue 
-        }
+        rgb.forEach((rgb, i) => {
+            block[i*3] = rgb.red
+            block[i*3+1] = rgb.green
+            block[i*3+2] = rgb.blue 
+        })
 
         return block
     }
