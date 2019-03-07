@@ -1,7 +1,27 @@
 Structed GIF Encoder
 ====================
 
-The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript.
+The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript. I planned to implement various quantization algorithms.
+
+Encoding flow
+-------------
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+a  
+
 
 Purpose
 -------
@@ -17,6 +37,14 @@ Notice
 ------
 I am not sure about performance. I will keep improve it.  
 If you have any idea, make a issue or contact me.
+
+Results
+-------
+ - Original image (jpeg)  
+![original](./example/test_image.jpg)
+
+ - Uniform algorithm  
+![uniform](./example/uniform_result.gif)
 
 Contact
 -------
