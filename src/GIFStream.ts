@@ -83,13 +83,12 @@ export class GIFStream {
 
     private static reduceBitTo16(buf: ArrayBuffer, w: number, h: number) {
         let pixels: Uint8Array = new Uint8Array(buf)
-
+        
         const dimension = pixels.length / w / h
 
         if(dimension == 4) {
             return pixels.filter((_, i) => (i + 1) % 4 != 0)
         }
-
         return pixels
     }
 }

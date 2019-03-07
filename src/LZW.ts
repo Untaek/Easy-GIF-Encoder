@@ -66,10 +66,10 @@ export class LZW {
 
     static compress(quantizationResult: QuantizationResult) {
         const LZW_MIN_SIZE_TBL = [0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
+        let INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
 
         const indexStream = quantizationResult.indexStream
         const TBL_SIZE = quantizationResult.globalColorTable.length
-        let INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
 
         for(let i=0; i<LZW_MIN_SIZE_TBL.length; i++) {
             if(TBL_SIZE > 2**LZW_MIN_SIZE_TBL[i]) {
@@ -80,8 +80,6 @@ export class LZW {
         }
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
-        let codeSize = 0
-
         const CLEAR_CODE = 2**INIT_LZW_MIN_SIZE
         const INFORMATION_CODE = CLEAR_CODE + 1
         const INIT_TBL_SIZE = CLEAR_CODE + 2
@@ -140,48 +138,42 @@ export class LZW {
                 tbSize = INIT_TBL_SIZE
                 currentLzwCodeSize = INIT_LZW_MIN_SIZE
                 colorTable.clear()
-                current -= idxBuffer.length - 1
+                current = current - (idxBuffer.length - 1)
                 idxBuffer.length = 1
                 continue
             }
 
+            // read
             const idx = indexStream[current]
             const saved = idxBuffer.map(v => `#${v}`).join('')
             const lookup = `${saved}#${idx}`
 
-            // idxBuffer + idx가 table에 있으면
-            // idx 를 idxBuffer에 넣기
+            current++
+
+            // found
             if(colorTable.has(lookup)) {
                 idxBuffer.push(idx)
-                current++
                 continue
             }
 
-            // idxBuffer + idx가 table에 없으면
-            // idxBuffer + idx를 table에 새롭게 추가
-            // idxBuffer를 비우고 table에서 찾은 index를 binaryBuffer에 넣기
-            // idxBuffer에 idx 넣기
-
+            // not found
             colorTable.set(lookup, tbSize)
-            let code = colorTable.get(saved)
-
             tbSize++
 
-            if(idxBuffer.length == 1) {
+            let code = colorTable.get(saved)
+
+            if(code == undefined) {
                 code = idxBuffer[0]
             }
-            idxBuffer[0] = idx
+            
             idxBuffer.length = 1
-        
+            idxBuffer[0] = idx
+
             if((2 << currentLzwCodeSize) < tbSize - 1) {
-                console.log(current / indexStream.length)
-                
                 currentLzwCodeSize++
-                
             }
 
-            if(code != undefined)
-                numToBinaryBuffer(code)
+            numToBinaryBuffer(code)
         }
 
         numToBinaryBuffer(INFORMATION_CODE)
@@ -194,13 +186,13 @@ export class LZW {
                 subBlock[subBlockLength] = byte
                 subBlockLength++
 
+                byte = 0x00
+                byteIdx = 0
+
                 if(subBlockLength == MAX_SUB_BLOCK) {
                     imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
                     subBlockLength = 0
                 }
-
-                byte = 0x00
-                byteIdx = 0
             }
         }
 
@@ -208,6 +200,7 @@ export class LZW {
             subBlock[subBlockLength] = byte
             subBlockLength++
         }
+
         imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
 
         return imageData

@@ -20,7 +20,7 @@ export class SimpleBlock {
         /**
          *  ['G', 'I', 'F', '8', '9', 'a']
          */ 
-        return new Int8Array([71, 73, 70, 56, 57, 97])
+        return new Uint8Array([71, 73, 70, 56, 57, 97])
     }
 
     static Trailer(){
@@ -31,7 +31,7 @@ export class SimpleBlock {
          *   +---------------+
          */
  
-        return new Int8Array([0x3B])
+        return new Uint8Array([0x3B])
     }
 
     static BlockTerminator() {
@@ -42,6 +42,6 @@ export class SimpleBlock {
          *   +---------------+
          */
 
-        return new Int8Array([0])
+        return new Uint8Array([0])
     }
 }

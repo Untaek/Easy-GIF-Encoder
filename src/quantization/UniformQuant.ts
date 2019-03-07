@@ -1,6 +1,4 @@
 import { BaseQuant, RGB, QuantizationResult } from "./BaseQuant";
-import { ColorTable } from "../ColorTable";
-import { writeFileSync, appendFileSync } from "fs";
 
 class Region extends RGB {
     count = 0
@@ -31,15 +29,15 @@ export class UniformQuant extends BaseQuant {
     private static GREEN_DIVISION = 8
     private static BLUE_DIVISION = 4
 
-    private static rDist = UniformQuant.COLOR_SPACE / UniformQuant.RED_DIVISION
-    private static gDist = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
-    private static bDist = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
+    private static RED_DIST = UniformQuant.COLOR_SPACE / UniformQuant.RED_DIVISION
+    private static GREEN_DIST = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
+    private static BLUE_DIST = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
     
     static fromBuffer(pixels: Uint8Array, w: number, h: number): QuantizationResult {
-        const regions: Region[] = new Array(UniformQuant.COLOR_SPACE).map(() => new Region())
+        const regions: Region[] = new Array(this.COLOR_SPACE).map(() => new Region())
         const indexStream = new Uint8Array(pixels.length / 3)
 
-        for(let i = 0; i < UniformQuant.COLOR_SPACE; i++) {
+        for(let i = 0; i < this.COLOR_SPACE; i++) {
             regions[i] = new Region()
             regions[i].index = i
         }
@@ -56,14 +54,20 @@ export class UniformQuant extends BaseQuant {
             g = pixels[i + 1]
             b = pixels[i + 2]
 
-            index = ~~((~~(r / UniformQuant.rDist)+1) * (~~(g / UniformQuant.gDist)+1) * (~~(b / UniformQuant.bDist)+1))
-            
+            index = 
+                ~~(r / this.RED_DIST) + 
+                ~~(g / this.GREEN_DIST) * this.RED_DIVISION + 
+                ~~(b / this.BLUE_DIST) * this.RED_DIVISION * this.GREEN_DIVISION
+
             if(!tbl.has(index)){
                 tbl.set(index, tbl.size)
             }
-            indexStream[i/3] = tbl.get(index)
 
+            indexStream[i/3] = tbl.get(index)
             regions[tbl.get(index)].add(r, g, b)
+
+            // indexStream[i/3] = index
+            // regions[index].add(r,g,b)
         }
 
         const fittedColorTable = regions

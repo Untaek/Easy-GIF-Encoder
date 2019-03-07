@@ -35,7 +35,7 @@ export class Extension {
         const block = new Uint8Array(8)
         block[0] = 0x21
         block[1] = 0xF9
-        block[2] = 4
+        block[2] = 0x04
         
         return block
     }
