@@ -13,18 +13,12 @@ export class Queue<T> {
         this.data[this.rear] = value
         this.rear++
         this.length++
-        if(this.rear == this.data.length) {
-            this.rear = 0
-        }
     }
 
     pop() {
         const data = this.data[this.front]
         this.front++
         this.length--
-        if(this.front == this.data.length) {
-            this.front = 0
-        }
 
         return data
     }

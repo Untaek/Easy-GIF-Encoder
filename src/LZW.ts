@@ -69,20 +69,20 @@ export class LZW {
 
         const indexStream = quantizationResult.indexStream
         const TBL_SIZE = quantizationResult.globalColorTable.length
-        let LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
+        let INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
 
         for(let i=0; i<LZW_MIN_SIZE_TBL.length; i++) {
             if(TBL_SIZE > 2**LZW_MIN_SIZE_TBL[i]) {
                 continue
             }
-            LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[i]
+            INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[i]
             break
         }
 
-        console.log(TBL_SIZE)
-        console.log(LZW_MIN_SIZE)
+        let currentLzwCodeSize = INIT_LZW_MIN_SIZE
+        let codeSize = 0
 
-        const CLEAR_CODE = 2**LZW_MIN_SIZE
+        const CLEAR_CODE = 2**INIT_LZW_MIN_SIZE
         const INFORMATION_CODE = CLEAR_CODE + 1
         const INIT_TBL_SIZE = CLEAR_CODE + 2
         const MAX_CODE_SIZE = 0x0FFF
@@ -96,7 +96,7 @@ export class LZW {
 
         const idxBuffer: number[] = []
 
-        const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 1)
+        const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
         let byte = 0x00
         let byteIdx = 0 // 0 ~ 7
 
@@ -109,15 +109,22 @@ export class LZW {
 
         const numToBinaryBuffer = (num: number) => {
             let val = num
+            let length = 0
             while(val > 0) {
                 binaryBuffer.push(val % 2)
-                val = (val >> 1)
+                val = val >> 1
+                length++
+            }
+
+            while(length < currentLzwCodeSize + 1) {
+                binaryBuffer.push(0)
+                length++
             }
         }
 
         // LZW minimum code size 삽입
         const lzwMinCodeSize = new Uint8Array(1)
-        lzwMinCodeSize[0] = LZW_MIN_SIZE
+        lzwMinCodeSize[0] = INIT_LZW_MIN_SIZE
         imageData.push(lzwMinCodeSize)
 
         // Clear code 삽입
@@ -128,16 +135,19 @@ export class LZW {
         
         // loop
         while(current < EOF) {
+            if(tbSize == MAX_CODE_SIZE) {
+                numToBinaryBuffer(CLEAR_CODE)
+                tbSize = INIT_TBL_SIZE
+                currentLzwCodeSize = INIT_LZW_MIN_SIZE
+                colorTable.clear()
+                current -= idxBuffer.length - 1
+                idxBuffer.length = 1
+                continue
+            }
+
             const idx = indexStream[current]
             const saved = idxBuffer.map(v => `#${v}`).join('')
             const lookup = `${saved}#${idx}`
-
-            if(tbSize > MAX_CODE_SIZE - 100) {
-                tbSize = INIT_TBL_SIZE
-                colorTable.clear()
-                numToBinaryBuffer(CLEAR_CODE)
-                continue
-            }
 
             // idxBuffer + idx가 table에 있으면
             // idx 를 idxBuffer에 넣기
@@ -153,7 +163,7 @@ export class LZW {
             // idxBuffer에 idx 넣기
 
             colorTable.set(lookup, tbSize)
-            let code = tbSize
+            let code = colorTable.get(saved)
 
             tbSize++
 
@@ -162,27 +172,35 @@ export class LZW {
             }
             idxBuffer[0] = idx
             idxBuffer.length = 1
+        
+            if((2 << currentLzwCodeSize) < tbSize - 1) {
+                console.log(current / indexStream.length)
+                
+                currentLzwCodeSize++
+                
+            }
 
-            numToBinaryBuffer(code)
+            if(code != undefined)
+                numToBinaryBuffer(code)
         }
 
         numToBinaryBuffer(INFORMATION_CODE)
 
         while(!binaryBuffer.empty()) {
-            byte += binaryBuffer.pop() << byteIdx
+            byte += (binaryBuffer.pop() << byteIdx)
             byteIdx++
 
-            if(byteIdx == 7) {
+            if(byteIdx == 8) {
                 subBlock[subBlockLength] = byte
                 subBlockLength++
-
-                byte = 0x00
-                byteIdx = 0
 
                 if(subBlockLength == MAX_SUB_BLOCK) {
                     imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
                     subBlockLength = 0
                 }
+
+                byte = 0x00
+                byteIdx = 0
             }
         }
 

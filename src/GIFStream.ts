@@ -5,6 +5,8 @@ import * as fs from 'fs'
 import { UniformQuant } from "./quantization/UniformQuant";
 import { TableBasedImage } from "./block/TableBasedImage";
 import { LZW } from "./LZW";
+import { Extension } from "./block/Extension";
+import { Readable } from "stream";
 
 /**
  *                      [ GIF Grammar ]
@@ -25,7 +27,20 @@ import { LZW } from "./LZW";
  */
 
 /**
- * GIF Spec use little endian.
+ * 
+ *  GIF Spec use little endian.
+ * 
+ *  [Simple structure]
+ *  
+ *  Header - 
+ *  Logical Screen Descriptor - 
+ *  Global Color Table - 
+ *  Image Descriptor - 
+ *  LZW code size -
+ *  Sub block* -
+ *  Block Terminator -
+ *  Trailer -
+ * 
  */
 
 type QuantizationOptions = {
@@ -40,13 +55,13 @@ export class GIFStream {
         const pixels = this.reduceBitTo16(buf, w, h)
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
         
-        const imageDescriptor = TableBasedImage.ImageDescriptor(w, h)
-
         const ws = fs.createWriteStream('result.gif')
+
         ws.write(Buffer.from(SimpleBlock.Header()))
         ws.write(Buffer.from(LogicalScreen.LogicalScreenDescriptor(w, h)))
         ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
-        ws.write(Buffer.from(imageDescriptor))
+        ws.write(Buffer.from(Extension.GraphicControlExtension()))
+        ws.write(Buffer.from(TableBasedImage.ImageDescriptor(w, h)))
         
         const compressed = LZW.compress(quantizationResult)
         for(let i=0; i< compressed.length; i++) {
@@ -72,7 +87,7 @@ export class GIFStream {
         const dimension = pixels.length / w / h
 
         if(dimension == 4) {
-            pixels = pixels.filter((_, i) => (i + 1) % 4 != 0)
+            return pixels.filter((_, i) => (i + 1) % 4 != 0)
         }
 
         return pixels
