@@ -1,6 +1,7 @@
 {
   "name": "structed-gif-encoder",
-  "version": "working on",
+  "version": "0.0.1",
+  "repository": "https://github.com/Untaek/Easy-GIF-Encoder",
   "description": "The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript.",
   "scripts": {},
   "author": "wkblack11@gmail.com",
@@ -8,7 +9,8 @@
   "devDependencies": {
     "@types/node": "^11.10.4",
     "ts-node": "^8.0.2",
-    "typescript": "^3.3.3333"
+    "tslint": "^5.13.1",
+    "typescript": "^3.3.3"
   },
   "dependencies": {
     "jpeg-js": "^0.3.4"

@@ -1,6 +1,6 @@
-import { TableBasedImage } from "./block/TableBasedImage";
-import { Queue } from "./util/queue";
-import { QuantizationResult } from "./quantization/BaseQuant";
+import { TableBasedImage } from "./block/TableBasedImage"
+import { IQuantizationResult } from "./quantization/BaseQuant"
+import { Queue } from "./util/queue"
 
 export class LZW {
 
@@ -59,28 +59,28 @@ export class LZW {
     1. Encoders should output a Clear code as the first code of each image data stream.
     2. An End of Information code must be the last code output by the encoder for an image.
     3. The first available compression code value is <Clear code>+2.
-    4. The output codes are of variable length, starting at <code size>+1 bits per code, 
+    4. The output codes are of variable length, starting at <code size>+1 bits per code,
         up to 12 bits per code.
 
     */
 
-    static compress(quantizationResult: QuantizationResult) {
+    public static compress(quantizationResult: IQuantizationResult) {
         const LZW_MIN_SIZE_TBL = [0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
         let INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
 
         const indexStream = quantizationResult.indexStream
         const TBL_SIZE = quantizationResult.globalColorTable.length
 
-        for(let i=0; i<LZW_MIN_SIZE_TBL.length; i++) {
-            if(TBL_SIZE > 2**LZW_MIN_SIZE_TBL[i]) {
+        for (const size of LZW_MIN_SIZE_TBL) {
+            if (TBL_SIZE > 2 ** size) {
                 continue
             }
-            INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[i]
+            INIT_LZW_MIN_SIZE = size
             break
         }
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
-        const CLEAR_CODE = 2**INIT_LZW_MIN_SIZE
+        const CLEAR_CODE = 2 ** INIT_LZW_MIN_SIZE
         const INFORMATION_CODE = CLEAR_CODE + 1
         const INIT_TBL_SIZE = CLEAR_CODE + 2
         const MAX_CODE_SIZE = 0x0FFF
@@ -89,7 +89,7 @@ export class LZW {
         const MAX_SUB_BLOCK = 255
 
         let tbSize = INIT_TBL_SIZE
-        let colorTable = new Map<string, number>()
+        const colorTable = new Map<string, number>()
         let current = 1
 
         const idxBuffer: number[] = []
@@ -108,13 +108,13 @@ export class LZW {
         const numToBinaryBuffer = (num: number) => {
             let val = num
             let length = 0
-            while(val > 0) {
+            while (val > 0) {
                 binaryBuffer.push(val % 2)
                 val = val >> 1
                 length++
             }
 
-            while(length < currentLzwCodeSize + 1) {
+            while (length < currentLzwCodeSize + 1) {
                 binaryBuffer.push(0)
                 length++
             }
@@ -130,10 +130,10 @@ export class LZW {
 
         // init
         idxBuffer[0] = indexStream[0]
-        
+
         // loop
-        while(current < EOF) {
-            if(tbSize == MAX_CODE_SIZE) {
+        while (current < EOF) {
+            if (tbSize === MAX_CODE_SIZE) {
                 numToBinaryBuffer(CLEAR_CODE)
                 tbSize = INIT_TBL_SIZE
                 currentLzwCodeSize = INIT_LZW_MIN_SIZE
@@ -145,13 +145,13 @@ export class LZW {
 
             // read
             const idx = indexStream[current]
-            const saved = idxBuffer.map(v => `#${v}`).join('')
+            const saved = idxBuffer.map((v) => `#${v}`).join("")
             const lookup = `${saved}#${idx}`
 
             current++
 
             // found
-            if(colorTable.has(lookup)) {
+            if (colorTable.has(lookup)) {
                 idxBuffer.push(idx)
                 continue
             }
@@ -162,14 +162,14 @@ export class LZW {
 
             let code = colorTable.get(saved)
 
-            if(code == undefined) {
+            if (code === undefined) {
                 code = idxBuffer[0]
             }
-            
+
             idxBuffer.length = 1
             idxBuffer[0] = idx
 
-            if((2 << currentLzwCodeSize) < tbSize - 1) {
+            if ((2 << currentLzwCodeSize) < tbSize - 1) {
                 currentLzwCodeSize++
             }
 
@@ -178,25 +178,25 @@ export class LZW {
 
         numToBinaryBuffer(INFORMATION_CODE)
 
-        while(!binaryBuffer.empty()) {
+        while (!binaryBuffer.empty()) {
             byte += (binaryBuffer.pop() << byteIdx)
             byteIdx++
 
-            if(byteIdx == 8) {
+            if (byteIdx === 8) {
                 subBlock[subBlockLength] = byte
                 subBlockLength++
 
                 byte = 0x00
                 byteIdx = 0
 
-                if(subBlockLength == MAX_SUB_BLOCK) {
+                if (subBlockLength === MAX_SUB_BLOCK) {
                     imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
                     subBlockLength = 0
                 }
             }
         }
 
-        if(byte > 0) {
+        if (byte > 0) {
             subBlock[subBlockLength] = byte
             subBlockLength++
         }

@@ -1,7 +1,7 @@
-import { RGB } from "../quantization/BaseQuant";
+import { RGB } from "../quantization/BaseQuant"
 
 export class ColorTable {
-    static gen(rgb: RGB[]) {
+    public static gen(rgb: RGB[]) {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
          *     +===============+
@@ -25,12 +25,12 @@ export class ColorTable {
          *     +===============+
          */
 
-        const block = new Uint8Array(rgb.length*3)
-        
-        rgb.forEach((rgb, i) => {
-            block[i*3] = rgb.red
-            block[i*3+1] = rgb.green
-            block[i*3+2] = rgb.blue 
+        const block = new Uint8Array(rgb.length * 3)
+
+        rgb.forEach((v, i) => {
+            block[i * 3] = v.red
+            block[i * 3 + 1] = v.green
+            block[i * 3 + 2] = v.blue
         })
 
         return block

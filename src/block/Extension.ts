@@ -1,5 +1,5 @@
 export class Extension {
-    static GraphicControlExtension() {
+    public static GraphicControlExtension() {
         /**
          *      7 6 5 4 3 2 1 0        Field Name                    Type
          *     +---------------+
@@ -29,14 +29,14 @@ export class Extension {
          *                             Disposal Method               3 Bits
          *                             User Input Flag               1 Bit
          *                             Transparent Color Flag        1 Bit
-         * 
+         *
          */
 
         const block = new Uint8Array(8)
         block[0] = 0x21
         block[1] = 0xF9
         block[2] = 0x04
-        
+
         return block
     }
 }

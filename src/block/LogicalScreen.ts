@@ -1,17 +1,17 @@
-import { ColorTable } from "./ColorTableBlock";
-import { RGB } from "../quantization/BaseQuant";
+import { RGB } from "../quantization/BaseQuant"
+import { ColorTable } from "./ColorTableBlock"
 
 export class LogicalScreen {
-    static LogicalScreenDescriptor(w: number, h: number) {
+    public static LogicalScreenDescriptor(w: number, h: number) {
         /**
          *       7 6 5 4 3 2 1 0        Field Name                    Type
          *      +---------------+
          *   0  |               |       Logical Screen Width          Unsigned
-         *      +-             -+       
+         *      +-             -+
          *   1  |               |
          *      +---------------+
          *   2  |               |       Logical Screen Height         Unsigned
-         *      +-             -+       
+         *      +-             -+
          *   3  |               |
          *      +---------------+
          *   4  | |     | |     |       <Packed Fields>               See below
@@ -39,7 +39,7 @@ export class LogicalScreen {
         return block
     }
 
-    static GlobalColorTable(rgb: RGB[]) {
+    public static GlobalColorTable(rgb: RGB[]) {
         return ColorTable.gen(rgb)
     }
 }

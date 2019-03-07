@@ -1,5 +1,5 @@
 export class SimpleBlock {
-    static Header(){
+    public static Header() {
         /**
          *    7 6 5 4 3 2 1 0        Field Name                    Type
          *   +---------------+
@@ -19,22 +19,22 @@ export class SimpleBlock {
 
         /**
          *  ['G', 'I', 'F', '8', '9', 'a']
-         */ 
+         */
         return new Uint8Array([71, 73, 70, 56, 57, 97])
     }
 
-    static Trailer(){
+    public static Trailer() {
         /**
          *    7 6 5 4 3 2 1 0        Field Name                    Type
          *   +---------------+
          * 0 |               |       GIF Trailer                   Byte
          *   +---------------+
          */
- 
+
         return new Uint8Array([0x3B])
     }
 
-    static BlockTerminator() {
+    public static BlockTerminator() {
         /**
          *    7 6 5 4 3 2 1 0        Field Name                    Type
          *   +---------------+

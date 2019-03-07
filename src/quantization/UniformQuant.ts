@@ -1,10 +1,10 @@
-import { BaseQuant, RGB, QuantizationResult } from "./BaseQuant";
+import { BaseQuant, IQuantizationResult, RGB } from "./BaseQuant"
 
 class Region extends RGB {
-    count = 0
-    
-    setAverage() {
-        if(this.count == 0) {
+    public count = 0
+
+    public setAverage() {
+        if (this.count === 0) {
             return this
         }
         this.red = Math.floor(this.red / this.count)
@@ -14,7 +14,7 @@ class Region extends RGB {
         return this
     }
 
-    add(r: number, g: number, b: number) {
+    public add(r: number, g: number, b: number) {
         this.red += r
         this.green += g
         this.blue += b
@@ -23,21 +23,12 @@ class Region extends RGB {
 }
 
 export class UniformQuant extends BaseQuant {
-    
-    private static COLOR_SPACE = 256
-    private static RED_DIVISION = 8
-    private static GREEN_DIVISION = 8
-    private static BLUE_DIVISION = 4
 
-    private static RED_DIST = UniformQuant.COLOR_SPACE / UniformQuant.RED_DIVISION
-    private static GREEN_DIST = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
-    private static BLUE_DIST = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
-    
-    static fromBuffer(pixels: Uint8Array, w: number, h: number): QuantizationResult {
+    public static fromBuffer(pixels: Uint8Array, w: number, h: number): IQuantizationResult {
         const regions: Region[] = new Array(this.COLOR_SPACE).map(() => new Region())
         const indexStream = new Uint8Array(pixels.length / 3)
 
-        for(let i = 0; i < this.COLOR_SPACE; i++) {
+        for (let i = 0; i < this.COLOR_SPACE; i++) {
             regions[i] = new Region()
             regions[i].index = i
         }
@@ -49,21 +40,21 @@ export class UniformQuant extends BaseQuant {
 
         const tbl = new Map<number, number>()
 
-        for(let i = 0; i < pixels.length; i+=3) {
+        for (let i = 0; i < pixels.length; i += 3) {
             r = pixels[i]
             g = pixels[i + 1]
             b = pixels[i + 2]
 
-            index = 
-                ~~(r / this.RED_DIST) + 
-                ~~(g / this.GREEN_DIST) * this.RED_DIVISION + 
+            index =
+                ~~(r / this.RED_DIST) +
+                ~~(g / this.GREEN_DIST) * this.RED_DIVISION +
                 ~~(b / this.BLUE_DIST) * this.RED_DIVISION * this.GREEN_DIVISION
 
-            if(!tbl.has(index)){
+            if (!tbl.has(index)) {
                 tbl.set(index, tbl.size)
             }
 
-            indexStream[i/3] = tbl.get(index)
+            indexStream[i / 3] = tbl.get(index)
             regions[tbl.get(index)].add(r, g, b)
 
             // indexStream[i/3] = index
@@ -71,13 +62,20 @@ export class UniformQuant extends BaseQuant {
         }
 
         const fittedColorTable = regions
-            .map(val => val.setAverage())
+            .map((val) => val.setAverage())
 
         return {
             globalColorTable: fittedColorTable,
-            indexStream: indexStream
+            indexStream,
         }
     }
 
-    static map(pixels: Uint8Array, colorTable: RGB[], w: number, h: number) {}
+    private static COLOR_SPACE = 256
+    private static RED_DIVISION = 8
+    private static GREEN_DIVISION = 8
+    private static BLUE_DIVISION = 4
+
+    private static RED_DIST = UniformQuant.COLOR_SPACE / UniformQuant.RED_DIVISION
+    private static GREEN_DIST = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
+    private static BLUE_DIST = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
 }

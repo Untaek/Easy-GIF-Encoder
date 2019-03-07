@@ -1,0 +1,9 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.tslint": true
+    },
+    "tslint.alwaysShowRuleFailuresAsWarnings": true,
+    "tslint.suppressWhileTypeErrorsPresent": true,
+    "tslint.jsEnable": false,
+    "tslint.exclude": "*.js"
+}
