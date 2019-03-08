@@ -4,6 +4,7 @@ import { LogicalScreen } from "./block/LogicalScreen"
 import { SimpleBlock } from "./block/SimpleBlock"
 import { TableBasedImage } from "./block/TableBasedImage"
 import { LZW } from "./LZW"
+import { NeuQuant } from "./quantization/NeuQuant"
 import { UniformQuant } from "./quantization/UniformQuant"
 
 /**
@@ -22,51 +23,46 @@ import { UniformQuant } from "./quantization/UniformQuant"
  *        <Table-Based Image> ::= Image Descriptor [Local Color Table] Image Data
  *
  *    <Special-Purpose Block> ::= Application Extension | Comment Extension
- */
-
-/**
  *
- *  GIF Spec use little endian.
  *
- *  [Simple structure]
+ *  * GIF Spec use little endian.
  *
- *  Header -
- *  Logical Screen Descriptor -
- *  Global Color Table -
- *  Image Descriptor -
- *  LZW code size -
- *  Sub block* -
- *  Block Terminator -
- *  Trailer -
+ *
+ *  [Most simplest structure]
+ *
+ *  Header
+ *  Logical Screen Descriptor
+ *  Global Color Table
+ *  Image Descriptor
+ *  LZW code size
+ *  Sub block*
+ *  Block Terminator
+ *  Trailer
  *
  */
 
 interface IQuantizationOptions {
-    method: "uniform" | "neu"
+    method: "uniform" | "neu" | "mediancut" | "kmeans"
 }
 
 export class GIFStream {
 
     public static encode(path: string, buf: ArrayBuffer, w: number, h: number, options: IQuantizationOptions) {
         const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
-        const a = "a"
-
         const pixels = this.reduceBitTo16(buf, w, h)
+
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
 
         const ws = fs.createWriteStream("result.gif")
 
         ws.write(Buffer.from(SimpleBlock.Header()))
-        ws.write(Buffer.from(LogicalScreen.LogicalScreenDescriptor(w, h)))
+        ws.write(Buffer.from(LogicalScreen.LogicalScreenDescriptor(w, h, quantizationResult.globalColorTable)))
         ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
         ws.write(Buffer.from(Extension.GraphicControlExtension()))
         ws.write(Buffer.from(TableBasedImage.ImageDescriptor(w, h)))
-
-        const compressed = LZW.compress(quantizationResult)
-        for (const chunk of compressed) {
+        for (const chunk of LZW.compress(quantizationResult)) {
             ws.write(Buffer.from(chunk))
         }
-
         ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))
         ws.close()
@@ -74,7 +70,7 @@ export class GIFStream {
 
     private static chooseQuantizationAlgorithm(options: IQuantizationOptions) {
         switch (options.method) {
-            case "neu":
+            case "neu": return NeuQuant
             case "uniform": return UniformQuant
             default: return UniformQuant
         }

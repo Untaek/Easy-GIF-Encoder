@@ -7,6 +7,7 @@ export class RGB {
 
 export interface IQuantizationResult {
     globalColorTable: RGB[]
+    globalColorTableSize: number // At least 2 up to 8.
     indexStream: Uint8Array
 }
 

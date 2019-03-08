@@ -1,4 +1,4 @@
-import { TableBasedImage } from "./block/TableBasedImage"
+import { Block } from "./block/Block"
 import { IQuantizationResult } from "./quantization/BaseQuant"
 import { Queue } from "./util/queue"
 
@@ -65,21 +65,9 @@ export class LZW {
     */
 
     public static compress(quantizationResult: IQuantizationResult) {
-        const LZW_MIN_SIZE_TBL = [0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
-        let INIT_LZW_MIN_SIZE = LZW_MIN_SIZE_TBL[0]
-
         const indexStream = quantizationResult.indexStream
-        const TBL_SIZE = quantizationResult.globalColorTable.length
+        const INIT_LZW_MIN_SIZE = quantizationResult.globalColorTableSize
 
-        for (const size of LZW_MIN_SIZE_TBL) {
-            if (TBL_SIZE > 2 ** size) {
-                continue
-            }
-            INIT_LZW_MIN_SIZE = size
-            break
-        }
-
-        let currentLzwCodeSize = INIT_LZW_MIN_SIZE
         const CLEAR_CODE = 2 ** INIT_LZW_MIN_SIZE
         const INFORMATION_CODE = CLEAR_CODE + 1
         const INIT_TBL_SIZE = CLEAR_CODE + 2
@@ -88,17 +76,16 @@ export class LZW {
         const EOF = indexStream.length
         const MAX_SUB_BLOCK = 255
 
-        let tbSize = INIT_TBL_SIZE
-        const colorTable = new Map<string, number>()
-        let current = 1
-
         const idxBuffer: number[] = []
-
+        const colorTable = new Map<string, number>()
         const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
+        const subBlock = new Uint8Array(MAX_SUB_BLOCK)
+
+        let currentLzwCodeSize = INIT_LZW_MIN_SIZE
+        let tbSize = INIT_TBL_SIZE
+        let current = 1
         let byte = 0x00
         let byteIdx = 0 // 0 ~ 7
-
-        const subBlock = new Uint8Array(MAX_SUB_BLOCK)
         let subBlockLength = 0
 
         // 설계를 stream 으로 바꿔야 한다
@@ -190,7 +177,7 @@ export class LZW {
                 byteIdx = 0
 
                 if (subBlockLength === MAX_SUB_BLOCK) {
-                    imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
+                    imageData.push(Block.SubBlock(subBlock, subBlockLength))
                     subBlockLength = 0
                 }
             }
@@ -201,7 +188,7 @@ export class LZW {
             subBlockLength++
         }
 
-        imageData.push(TableBasedImage.SubBlock(subBlock, subBlockLength))
+        imageData.push(Block.SubBlock(subBlock, subBlockLength))
 
         return imageData
     }

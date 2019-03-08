@@ -56,16 +56,17 @@ export class UniformQuant extends BaseQuant {
 
             indexStream[i / 3] = tbl.get(index)
             regions[tbl.get(index)].add(r, g, b)
-
-            // indexStream[i/3] = index
-            // regions[index].add(r,g,b)
         }
 
         const fittedColorTable = regions
+            .filter((val) => val.count)
             .map((val) => val.setAverage())
+
+        const tableSize = (fittedColorTable.length - 1).toString(2).length
 
         return {
             globalColorTable: fittedColorTable,
+            globalColorTableSize: tableSize,
             indexStream,
         }
     }

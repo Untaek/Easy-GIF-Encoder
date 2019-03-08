@@ -25,7 +25,9 @@ export class ColorTable {
          *     +===============+
          */
 
-        const block = new Uint8Array(rgb.length * 3)
+        const tblSize = (rgb.length - 1).toString(2).length
+
+        const block = new Uint8Array((1 << tblSize) * 3)
 
         rgb.forEach((v, i) => {
             block[i * 3] = v.red

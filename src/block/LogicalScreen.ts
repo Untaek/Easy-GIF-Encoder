@@ -2,7 +2,7 @@ import { RGB } from "../quantization/BaseQuant"
 import { ColorTable } from "./ColorTableBlock"
 
 export class LogicalScreen {
-    public static LogicalScreenDescriptor(w: number, h: number) {
+    public static LogicalScreenDescriptor(w: number, h: number, tbl: RGB[]) {
         /**
          *       7 6 5 4 3 2 1 0        Field Name                    Type
          *      +---------------+
@@ -27,12 +27,14 @@ export class LogicalScreen {
          *                              Size of Global Color Table    3 Bits
          */
 
+        const tblSize = (tbl.length - 1).toString(2).length - 1
+
         const block = new Uint8Array(7)
-        block[0] = w & 255
+        block[0] = w & 0xFF
         block[1] = w >> 8
-        block[2] = h & 255
+        block[2] = h & 0xFF
         block[3] = h >> 8
-        block[4] = 0xF7
+        block[4] = tblSize | 0xF0
         block[5] = 0x00
         block[6] = 0x00
 
