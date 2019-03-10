@@ -1,7 +1,7 @@
 import { Block } from "./block/Block"
 import { IQuantizationResult } from "./quantization/BaseQuant"
 import { Queue } from "./util/queue"
-import { Trie } from "./util/Trie"
+import { LZWTrie } from "./util/Trie"
 
 export class LZW {
 
@@ -82,7 +82,7 @@ export class LZW {
         const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
         const subBlock = new Uint8Array(MAX_SUB_BLOCK)
 
-        const colorTableTrie = new Trie()
+        const colorTableTrie = new LZWTrie()
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
         let tbSize = INIT_TBL_SIZE
@@ -114,16 +114,16 @@ export class LZW {
             numToBinaryBuffer(CLEAR_CODE)
             tbSize = INIT_TBL_SIZE
             currentLzwCodeSize = INIT_LZW_MIN_SIZE
-            colorTable.clear()
-            current = current - (idxBuffer.length - 1)
-            idxBuffer.length = 1
+            current = current - colorTableTrie.indicator.depth
+            colorTableTrie.clear()
         }
 
         const nextPixel = () => {
-            if (tbSize === MAX_CODE_SIZE) {
+            if (colorTableTrie.size + INIT_TBL_SIZE === MAX_CODE_SIZE) {
                 clearTbl()
             }
-            return current++
+            current += 1
+            return current
         }
 
         // LZW minimum code size 삽입
@@ -135,37 +135,37 @@ export class LZW {
         numToBinaryBuffer(CLEAR_CODE)
 
         // init
-        idxBuffer[0] = indexStream[0]
+        // idxBuffer[0] = indexStream[0]
+        colorTableTrie.newNode(indexStream[0])
+        colorTableTrie.indicator = colorTableTrie.root.node[indexStream[0]]
+        colorTableTrie.indicator.index = indexStream[0]
 
         // loop
-        while (nextPixel() < EOF + 1) {
-            // read
+        while (nextPixel() < EOF) {
             const idx = indexStream[current]
-
-            // performace critical
-            const saved = idxBuffer.map((v) => `#${v}`).join("")
-            const lookup = `${saved}#${idx}`
+            const lookupTrie = colorTableTrie.indicator.node
 
             // found
-            if (colorTable.has(lookup)) {
-                idxBuffer.push(idx)
+            if (lookupTrie && lookupTrie[idx]) {
+                colorTableTrie.indicator = lookupTrie[idx]
                 continue
             }
 
             // not found
-            colorTable.set(lookup, tbSize)
-            tbSize++
+            colorTableTrie.newNode(idx, colorTableTrie.size + INIT_TBL_SIZE)
+            colorTableTrie.size++
 
-            let code = colorTable.get(saved)
+            const code = colorTableTrie.indicator.index
 
-            if (code === undefined) {
-                code = idxBuffer[0]
+            colorTableTrie.indicator = colorTableTrie.root
+
+            if (colorTableTrie.root.node[idx] === undefined) {
+                colorTableTrie.newNode(idx, idx)
             }
 
-            idxBuffer.length = 1
-            idxBuffer[0] = idx
+            colorTableTrie.indicator = colorTableTrie.indicator.node[idx]
 
-            if ((2 << currentLzwCodeSize) < tbSize - 1) {
+            if ((2 << currentLzwCodeSize) < colorTableTrie.size + INIT_TBL_SIZE - 1) {
                 currentLzwCodeSize++
             }
 

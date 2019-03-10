@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Launch Program",
             "protocol": "inspector",
-            "args": ["test_image.jpg"],
+            "args": ["example/test_image.jpg"],
             "cwd": "${workspaceRoot}",
             "runtimeArgs": ["-r", "ts-node/register"],
             "internalConsoleOptions": "openOnSessionStart",
