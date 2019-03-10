@@ -38,7 +38,8 @@ export class UniformQuant extends BaseQuant {
         let b = 0
         let index = 0
 
-        const tbl = new Map<number, number>()
+        const tbl = new Uint8Array(this.COLOR_SPACE)
+        let tblSize = 0
 
         for (let i = 0; i < pixels.length; i += 3) {
             r = pixels[i]
@@ -50,12 +51,12 @@ export class UniformQuant extends BaseQuant {
                 ~~(g / this.GREEN_DIST) * this.RED_DIVISION +
                 ~~(b / this.BLUE_DIST) * this.RED_DIVISION * this.GREEN_DIVISION
 
-            if (!tbl.has(index)) {
-                tbl.set(index, tbl.size)
+            if (!tbl[index]) {
+                tbl[index] = ++tblSize
             }
 
-            indexStream[i / 3] = tbl.get(index)
-            regions[tbl.get(index)].add(r, g, b)
+            indexStream[i / 3] = tbl[index] - 1
+            regions[tbl[index] - 1].add(r, g, b)
         }
 
         const fittedColorTable = regions
@@ -71,12 +72,15 @@ export class UniformQuant extends BaseQuant {
         }
     }
 
-    private static COLOR_SPACE = 256
-    private static RED_DIVISION = 8
-    private static GREEN_DIVISION = 8
-    private static BLUE_DIVISION = 4
+    private static RED_DIVISION = 7
+    private static GREEN_DIVISION = 6
+    private static BLUE_DIVISION = 6
+    private static COLOR_SPACE
+        = UniformQuant.RED_DIVISION *
+        UniformQuant.GREEN_DIVISION *
+        UniformQuant.BLUE_DIVISION
 
-    private static RED_DIST = UniformQuant.COLOR_SPACE / UniformQuant.RED_DIVISION
-    private static GREEN_DIST = UniformQuant.COLOR_SPACE / UniformQuant.GREEN_DIVISION
-    private static BLUE_DIST = UniformQuant.COLOR_SPACE / UniformQuant.BLUE_DIVISION
+    private static RED_DIST = 256 / UniformQuant.RED_DIVISION
+    private static GREEN_DIST = 256 / UniformQuant.GREEN_DIVISION
+    private static BLUE_DIST = 256 / UniformQuant.BLUE_DIVISION
 }

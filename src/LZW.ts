@@ -1,6 +1,7 @@
 import { Block } from "./block/Block"
 import { IQuantizationResult } from "./quantization/BaseQuant"
 import { Queue } from "./util/queue"
+import { Trie } from "./util/Trie"
 
 export class LZW {
 
@@ -73,7 +74,7 @@ export class LZW {
         const INIT_TBL_SIZE = CLEAR_CODE + 2
         const MAX_CODE_SIZE = 0x0FFF
 
-        const EOF = indexStream.length
+        const EOF = indexStream.length + 1
         const MAX_SUB_BLOCK = 255
 
         const idxBuffer: number[] = []
@@ -81,9 +82,11 @@ export class LZW {
         const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
         const subBlock = new Uint8Array(MAX_SUB_BLOCK)
 
+        const colorTableTrie = new Trie()
+
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
         let tbSize = INIT_TBL_SIZE
-        let current = 1
+        let current = 0
         let byte = 0x00
         let byteIdx = 0 // 0 ~ 7
         let subBlockLength = 0
@@ -107,6 +110,22 @@ export class LZW {
             }
         }
 
+        const clearTbl = () => {
+            numToBinaryBuffer(CLEAR_CODE)
+            tbSize = INIT_TBL_SIZE
+            currentLzwCodeSize = INIT_LZW_MIN_SIZE
+            colorTable.clear()
+            current = current - (idxBuffer.length - 1)
+            idxBuffer.length = 1
+        }
+
+        const nextPixel = () => {
+            if (tbSize === MAX_CODE_SIZE) {
+                clearTbl()
+            }
+            return current++
+        }
+
         // LZW minimum code size 삽입
         const lzwMinCodeSize = new Uint8Array(1)
         lzwMinCodeSize[0] = INIT_LZW_MIN_SIZE
@@ -119,23 +138,13 @@ export class LZW {
         idxBuffer[0] = indexStream[0]
 
         // loop
-        while (current < EOF) {
-            if (tbSize === MAX_CODE_SIZE) {
-                numToBinaryBuffer(CLEAR_CODE)
-                tbSize = INIT_TBL_SIZE
-                currentLzwCodeSize = INIT_LZW_MIN_SIZE
-                colorTable.clear()
-                current = current - (idxBuffer.length - 1)
-                idxBuffer.length = 1
-                continue
-            }
-
+        while (nextPixel() < EOF + 1) {
             // read
             const idx = indexStream[current]
+
+            // performace critical
             const saved = idxBuffer.map((v) => `#${v}`).join("")
             const lookup = `${saved}#${idx}`
-
-            current++
 
             // found
             if (colorTable.has(lookup)) {
@@ -165,6 +174,8 @@ export class LZW {
 
         numToBinaryBuffer(INFORMATION_CODE)
 
+        console.log("finished trans codes to binary")
+
         while (!binaryBuffer.empty()) {
             byte += (binaryBuffer.pop() << byteIdx)
             byteIdx++
@@ -189,6 +200,8 @@ export class LZW {
         }
 
         imageData.push(Block.SubBlock(subBlock, subBlockLength))
+
+        console.log("imageblock has created")
 
         return imageData
     }

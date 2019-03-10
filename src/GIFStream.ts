@@ -44,14 +44,24 @@ import { UniformQuant } from "./quantization/UniformQuant"
 interface IQuantizationOptions {
     method: "uniform" | "neu" | "mediancut" | "kmeans"
 }
-
 export class GIFStream {
 
     public static encode(path: string, buf: ArrayBuffer, w: number, h: number, options: IQuantizationOptions) {
         const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
+
+        // tslint:disable-next-line: no-console
+        console.log(`${quantizationAlgorithm.name} is selected.`)
+
         const pixels = this.reduceBitTo16(buf, w, h)
 
+        // tslint:disable-next-line: no-console
+        console.log(`pixels were reduced 24 to 16`)
+
+        // tslint:disable-next-line: no-console
+        console.log("Just start a quantization")
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
+        // tslint:disable-next-line: no-console
+        console.log("Quantization has finished")
 
         const ws = fs.createWriteStream("result.gif")
 
@@ -60,9 +70,13 @@ export class GIFStream {
         ws.write(Buffer.from(LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)))
         ws.write(Buffer.from(Extension.GraphicControlExtension()))
         ws.write(Buffer.from(TableBasedImage.ImageDescriptor(w, h)))
+        // tslint:disable-next-line: no-console
+        console.log("Just start a compression")
         for (const chunk of LZW.compress(quantizationResult)) {
             ws.write(Buffer.from(chunk))
         }
+        // tslint:disable-next-line: no-console
+        console.log("compression has finished")
         ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))
         ws.close()
