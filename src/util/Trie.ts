@@ -2,11 +2,13 @@ export class LZWTrie {
     public root: TrieNode
     public indicator: TrieNode
     public size: number
+    public step: number
 
     constructor() {
         this.root = new TrieNode()
         this.indicator = this.root
         this.size = 0
+        this.step = 0
     }
 
     public newNode(index: number, value?: number) {
@@ -14,7 +16,12 @@ export class LZWTrie {
             this.indicator.node = new Array<TrieNode>(256)
         }
 
-        this.indicator.node[index] = new TrieNode(this.indicator)
+        if (this.indicator.node[index] === undefined) {
+            this.indicator.node[index] = new TrieNode(this.indicator)
+        }
+
+        this.indicator.node[index].step = this.step
+
         if (value !== undefined) {
             this.indicator.node[index].index = value
         }
@@ -22,10 +29,8 @@ export class LZWTrie {
 
     public clear(target: number) {
         this.size = 0
-        this.root = new TrieNode()
-        this.indicator = this.root
-        this.newNode(target, target)
         this.indicator = this.root.node[target]
+        this.step++
     }
 }
 
@@ -35,6 +40,7 @@ class TrieNode {
     public index = 0
     public parent: TrieNode = null
     public depth = 0
+    public step = 0
 
     constructor(parent?: TrieNode) {
         if (parent) {

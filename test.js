@@ -13,4 +13,4 @@ console.log(bitmap.height)
 
 let startAt = Date.now()
 const gifStream = gif.GIFStream.encode('result.gif', bitmap.data, bitmap.width, bitmap.height, {method: 'uniform'})
-console.log(Date.now() - startAt)
+console.log(`It has taken ${Date.now() - startAt} ms`)

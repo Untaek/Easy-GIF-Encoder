@@ -138,7 +138,7 @@ export class LZW {
             const lookupTrie = colorTableTrie.indicator.node
 
             // found
-            if (lookupTrie && lookupTrie[idx]) {
+            if (lookupTrie && lookupTrie[idx] && lookupTrie[idx].step === colorTableTrie.step) {
                 colorTableTrie.indicator = lookupTrie[idx]
                 continue
             }
