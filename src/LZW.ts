@@ -77,13 +77,12 @@ export class LZW {
         const EOF = indexStream.length + 1
         const MAX_SUB_BLOCK = 255
 
-        const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
+        const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length)
         const subBlock = new Uint8Array(MAX_SUB_BLOCK)
 
-        const colorTableTrie = new LZWTrie()
+        const colorTable = new LZWTrie()
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
-        const tbSize = INIT_TBL_SIZE
         let current = 0
         let byte = 0x00
         let byteIdx = 0 // 0 ~ 7
@@ -109,11 +108,11 @@ export class LZW {
         }
 
         const nextPixel = () => {
-            if (colorTableTrie.size + INIT_TBL_SIZE === MAX_CODE_SIZE) {
+            if (colorTable.size + INIT_TBL_SIZE === MAX_CODE_SIZE) {
                 numToBinaryBuffer(CLEAR_CODE)
                 currentLzwCodeSize = INIT_LZW_MIN_SIZE
-                current = current - colorTableTrie.indicator.depth + 1
-                colorTableTrie.clear(indexStream[current])
+                current = current - colorTable.indicator.depth + 1
+                colorTable.clear(indexStream[current])
             }
             current += 1
             return current
@@ -128,36 +127,36 @@ export class LZW {
         numToBinaryBuffer(CLEAR_CODE)
 
         // init
-        colorTableTrie.newNode(indexStream[0])
-        colorTableTrie.indicator = colorTableTrie.root.node[indexStream[0]]
-        colorTableTrie.indicator.index = indexStream[0]
+        colorTable.newNode(indexStream[0])
+        colorTable.indicator = colorTable.root.node[indexStream[0]]
+        colorTable.indicator.index = indexStream[0]
 
         // loop
         while (nextPixel() < EOF) {
             const idx = indexStream[current]
-            const lookupTrie = colorTableTrie.indicator.node
+            const lookup = colorTable.indicator.node
 
             // found
-            if (lookupTrie && lookupTrie[idx] && lookupTrie[idx].step === colorTableTrie.step) {
-                colorTableTrie.indicator = lookupTrie[idx]
+            if (lookup && lookup[idx] && lookup[idx].step === colorTable.step) {
+                colorTable.indicator = lookup[idx]
                 continue
             }
 
             // not found
-            colorTableTrie.newNode(idx, colorTableTrie.size + INIT_TBL_SIZE)
-            colorTableTrie.size++
+            colorTable.newNode(idx, colorTable.size + INIT_TBL_SIZE)
+            colorTable.size++
 
-            const code = colorTableTrie.indicator.index
+            const code = colorTable.indicator.index
 
-            colorTableTrie.indicator = colorTableTrie.root
+            colorTable.indicator = colorTable.root
 
-            if (colorTableTrie.root.node[idx] === undefined) {
-                colorTableTrie.newNode(idx, idx)
+            if (colorTable.root.node[idx] === undefined) {
+                colorTable.newNode(idx, idx)
             }
 
-            colorTableTrie.indicator = colorTableTrie.indicator.node[idx]
+            colorTable.indicator = colorTable.indicator.node[idx]
 
-            if ((2 << currentLzwCodeSize) < colorTableTrie.size + INIT_TBL_SIZE - 1) {
+            if ((2 << currentLzwCodeSize) < colorTable.size + INIT_TBL_SIZE - 1) {
                 currentLzwCodeSize++
             }
 
