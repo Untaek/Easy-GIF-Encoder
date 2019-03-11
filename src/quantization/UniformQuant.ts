@@ -24,9 +24,9 @@ class Region extends RGB {
 
 export class UniformQuant extends BaseQuant {
 
-    public static fromBuffer(pixels: Uint8Array, w: number, h: number): IQuantizationResult {
+    public static fromBuffer(pixels: Uint8Array, w: number, h: number, dimension: number): IQuantizationResult {
         const regions: Region[] = new Array(this.COLOR_SPACE).map(() => new Region())
-        const indexStream = new Uint8Array(pixels.length / 3)
+        const indexStream = new Uint8Array(w * h)
 
         for (let i = 0; i < this.COLOR_SPACE; i++) {
             regions[i] = new Region()
@@ -41,7 +41,7 @@ export class UniformQuant extends BaseQuant {
         const tbl = new Uint8Array(this.COLOR_SPACE)
         let tblSize = 0
 
-        for (let i = 0; i < pixels.length; i += 3) {
+        for (let i = 0; i < pixels.length; i += dimension) {
             r = pixels[i]
             g = pixels[i + 1]
             b = pixels[i + 2]
@@ -55,7 +55,7 @@ export class UniformQuant extends BaseQuant {
                 tbl[index] = ++tblSize
             }
 
-            indexStream[i / 3] = tbl[index] - 1
+            indexStream[i / dimension] = tbl[index] - 1
             regions[tbl[index] - 1].add(r, g, b)
         }
 
@@ -72,9 +72,9 @@ export class UniformQuant extends BaseQuant {
         }
     }
 
-    private static RED_DIVISION = 7
-    private static GREEN_DIVISION = 6
-    private static BLUE_DIVISION = 6
+    private static RED_DIVISION = 8
+    private static GREEN_DIVISION = 9
+    private static BLUE_DIVISION = 9
     private static COLOR_SPACE
         = UniformQuant.RED_DIVISION *
         UniformQuant.GREEN_DIVISION *

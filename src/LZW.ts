@@ -76,11 +76,10 @@ export class LZW {
 
         const EOF = indexStream.length + 1
         const MAX_SUB_BLOCK = 255
-
-        const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length)
         const subBlock = new Uint8Array(MAX_SUB_BLOCK)
 
         const colorTable = new LZWTrie()
+        const binaryBuffer = new Queue<number>(12)
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
         let current = 0
@@ -92,24 +91,9 @@ export class LZW {
         // 구현을 위한 임시 용도
         const imageData: Uint8Array[] = []
 
-        const numToBinaryBuffer = (num: number) => {
-            let val = num
-            let length = 0
-            while (val > 0) {
-                binaryBuffer.push(val % 2)
-                val = val >> 1
-                length++
-            }
-
-            while (length < currentLzwCodeSize + 1) {
-                binaryBuffer.push(0)
-                length++
-            }
-        }
-
         const nextPixel = () => {
             if (colorTable.size + INIT_TBL_SIZE === MAX_CODE_SIZE) {
-                numToBinaryBuffer(CLEAR_CODE)
+                codeToSubblock(CLEAR_CODE)
                 currentLzwCodeSize = INIT_LZW_MIN_SIZE
                 current = current - colorTable.indicator.depth + 1
                 colorTable.clear(indexStream[current])
@@ -118,13 +102,52 @@ export class LZW {
             return current
         }
 
+        const codeToSubblock = (code: number) => {
+            let dec = code
+            let length = 0
+
+            if ((2 << currentLzwCodeSize) < colorTable.size + INIT_TBL_SIZE - 1) {
+                currentLzwCodeSize++
+            }
+
+            while (dec > 0) {
+                binaryBuffer.push(dec % 2)
+                dec = dec >> 1
+                length++
+            }
+
+            while (length < currentLzwCodeSize + 1) {
+                binaryBuffer.push(0)
+                length++
+            }
+
+            while (!binaryBuffer.empty()) {
+                byte += (binaryBuffer.pop() % 2) << byteIdx
+                byteIdx++
+
+                if (byteIdx === 8) {
+                    subBlock[subBlockLength] = byte
+                    subBlockLength++
+
+                    byte = 0
+                    byteIdx = 0
+
+                    if (subBlockLength === MAX_SUB_BLOCK) {
+                        imageData.push(Block.SubBlock(subBlock, subBlockLength))
+                        subBlockLength = 0
+                    }
+                }
+            }
+        }
+
         // LZW minimum code size 삽입
         const lzwMinCodeSize = new Uint8Array(1)
         lzwMinCodeSize[0] = INIT_LZW_MIN_SIZE
         imageData.push(lzwMinCodeSize)
 
         // Clear code 삽입
-        numToBinaryBuffer(CLEAR_CODE)
+        // numToBinaryBuffer(CLEAR_CODE)
+        codeToSubblock(CLEAR_CODE)
 
         // init
         colorTable.newNode(indexStream[0])
@@ -156,34 +179,13 @@ export class LZW {
 
             colorTable.indicator = colorTable.indicator.node[idx]
 
-            if ((2 << currentLzwCodeSize) < colorTable.size + INIT_TBL_SIZE - 1) {
-                currentLzwCodeSize++
-            }
-
-            numToBinaryBuffer(code)
+            codeToSubblock(code)
         }
 
-        numToBinaryBuffer(INFORMATION_CODE)
+        codeToSubblock(INFORMATION_CODE)
 
+        // tslint:disable-next-line: no-console
         console.log("finished trans codes to binary")
-
-        while (!binaryBuffer.empty()) {
-            byte += (binaryBuffer.pop() << byteIdx)
-            byteIdx++
-
-            if (byteIdx === 8) {
-                subBlock[subBlockLength] = byte
-                subBlockLength++
-
-                byte = 0x00
-                byteIdx = 0
-
-                if (subBlockLength === MAX_SUB_BLOCK) {
-                    imageData.push(Block.SubBlock(subBlock, subBlockLength))
-                    subBlockLength = 0
-                }
-            }
-        }
 
         if (byte > 0) {
             subBlock[subBlockLength] = byte
@@ -192,6 +194,7 @@ export class LZW {
 
         imageData.push(Block.SubBlock(subBlock, subBlockLength))
 
+        // tslint:disable-next-line: no-console
         console.log("imageblock has created")
 
         return imageData

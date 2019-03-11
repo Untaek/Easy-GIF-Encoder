@@ -5,7 +5,7 @@ const gif = require('./src/GIFStream')
 const file = process.argv[2]
 const buf = fs.readFileSync(file)
 
-const bitmap = jpeg.decode(buf)
+const bitmap = jpeg.decode(buf, true)
 
 console.log(bitmap.data.length)
 console.log(bitmap.width)

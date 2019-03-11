@@ -12,7 +12,7 @@ export interface IQuantizationResult {
 }
 
 export class BaseQuant {
-    public static fromBuffer(buf: ArrayBuffer, w: number, h: number): IQuantizationResult {
+    public static fromBuffer(buf: ArrayBuffer, w: number, h: number, dimension: number): IQuantizationResult {
         throw Error("Not implemented!")
     }
 

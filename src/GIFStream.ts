@@ -46,20 +46,22 @@ interface IQuantizationOptions {
 }
 export class GIFStream {
 
-    public static encode(path: string, buf: ArrayBuffer, w: number, h: number, options: IQuantizationOptions) {
+    public static encode(path: string, pixels: Uint8Array, w: number, h: number, options: IQuantizationOptions) {
         const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
 
         // tslint:disable-next-line: no-console
-        console.log(`${quantizationAlgorithm.name} is selected.`)
+        console.log(`Quantization algorithm: ${quantizationAlgorithm.name}`)
 
-        const pixels = this.reduceBitTo16(buf, w, h)
+        const dimension = pixels.length / w / h
 
         // tslint:disable-next-line: no-console
-        console.log(`pixels were reduced 24 to 16`)
+        console.log(`Color dimension: ${dimension}`)
 
         // tslint:disable-next-line: no-console
         console.log("Just start a quantization")
-        const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h)
+
+        const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h, dimension)
+
         // tslint:disable-next-line: no-console
         console.log("Quantization has finished")
 
@@ -88,16 +90,5 @@ export class GIFStream {
             case "uniform": return UniformQuant
             default: return UniformQuant
         }
-    }
-
-    private static reduceBitTo16(buf: ArrayBuffer, w: number, h: number) {
-        const pixels: Uint8Array = new Uint8Array(buf)
-
-        const dimension = pixels.length / w / h
-
-        if (dimension === 4) {
-            return pixels.filter((_, i) => (i + 1) % 4 !== 0)
-        }
-        return pixels
     }
 }
