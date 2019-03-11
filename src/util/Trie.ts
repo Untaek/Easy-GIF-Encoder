@@ -20,10 +20,12 @@ export class LZWTrie {
         }
     }
 
-    public clear() {
+    public clear(target: number) {
         this.size = 0
         this.root = new TrieNode()
         this.indicator = this.root
+        this.newNode(target, target)
+        this.indicator = this.root.node[target]
     }
 }
 

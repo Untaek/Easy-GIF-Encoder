@@ -77,15 +77,13 @@ export class LZW {
         const EOF = indexStream.length + 1
         const MAX_SUB_BLOCK = 255
 
-        const idxBuffer: number[] = []
-        const colorTable = new Map<string, number>()
         const binaryBuffer: Queue<number> = new Queue<number>(indexStream.length * 12)
         const subBlock = new Uint8Array(MAX_SUB_BLOCK)
 
         const colorTableTrie = new LZWTrie()
 
         let currentLzwCodeSize = INIT_LZW_MIN_SIZE
-        let tbSize = INIT_TBL_SIZE
+        const tbSize = INIT_TBL_SIZE
         let current = 0
         let byte = 0x00
         let byteIdx = 0 // 0 ~ 7
@@ -110,17 +108,12 @@ export class LZW {
             }
         }
 
-        const clearTbl = () => {
-            numToBinaryBuffer(CLEAR_CODE)
-            tbSize = INIT_TBL_SIZE
-            currentLzwCodeSize = INIT_LZW_MIN_SIZE
-            current = current - colorTableTrie.indicator.depth
-            colorTableTrie.clear()
-        }
-
         const nextPixel = () => {
             if (colorTableTrie.size + INIT_TBL_SIZE === MAX_CODE_SIZE) {
-                clearTbl()
+                numToBinaryBuffer(CLEAR_CODE)
+                currentLzwCodeSize = INIT_LZW_MIN_SIZE
+                current = current - colorTableTrie.indicator.depth + 1
+                colorTableTrie.clear(indexStream[current])
             }
             current += 1
             return current
@@ -135,7 +128,6 @@ export class LZW {
         numToBinaryBuffer(CLEAR_CODE)
 
         // init
-        // idxBuffer[0] = indexStream[0]
         colorTableTrie.newNode(indexStream[0])
         colorTableTrie.indicator = colorTableTrie.root.node[indexStream[0]]
         colorTableTrie.indicator.index = indexStream[0]
