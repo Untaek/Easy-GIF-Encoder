@@ -111,7 +111,7 @@ export class LZW {
             }
 
             while (dec > 0) {
-                binaryBuffer.push(dec % 2)
+                binaryBuffer.push(dec & 0x01)
                 dec = dec >> 1
                 length++
             }
@@ -122,7 +122,7 @@ export class LZW {
             }
 
             while (!binaryBuffer.empty()) {
-                byte += (binaryBuffer.pop() % 2) << byteIdx
+                byte += (binaryBuffer.pop() & 0x01) << byteIdx
                 byteIdx++
 
                 if (byteIdx === 8) {
@@ -146,7 +146,6 @@ export class LZW {
         imageData.push(lzwMinCodeSize)
 
         // Clear code 삽입
-        // numToBinaryBuffer(CLEAR_CODE)
         codeToSubblock(CLEAR_CODE)
 
         // init

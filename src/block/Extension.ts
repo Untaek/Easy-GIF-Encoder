@@ -1,3 +1,5 @@
+import { Block } from "./Block"
+
 export class Extension {
     public static GraphicControlExtension() {
         /**
@@ -100,7 +102,7 @@ export class Extension {
         return block
     }
 
-    public static ApplicationExtension(data: Uint8Array) {
+    public static ApplicationExtension(id: string, code: string, data: Uint8Array) {
         /**
          *       7 6 5 4 3 2 1 0        Field Name                    Type
          *     +---------------+
@@ -155,5 +157,14 @@ export class Extension {
         block[block.length - 1] = 0x00
 
         return block
+    }
+
+    public static NetscapeLoopingApplicationExtension() {
+        const subblock = new Uint8Array(3)
+        subblock[0] = 0x01 // Sub-block ID
+        subblock[1] = 0x00 // Loop count ( 2bytes )
+        subblock[2] = 0x00 // Loop count (   --   )
+
+        return this.ApplicationExtension("NETSCAPE", "2.0", Block.SubBlock(subblock, 3))
     }
 }

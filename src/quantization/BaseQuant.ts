@@ -12,23 +12,11 @@ export interface IQuantizationResult {
 }
 
 export class BaseQuant {
-    public static fromBuffer(buf: ArrayBuffer, w: number, h: number, dimension: number): IQuantizationResult {
+    public static fromBuffer(buf: Uint8Array, w: number, h: number, dimension: number): IQuantizationResult {
         throw Error("Not implemented!")
     }
 
     public static map(pixels: Uint8Array, colorTable: RGB[], w: number, h: number) {
         throw Error("Not implemented!")
-    }
-
-    private toUintArray(pixels: RGB[]) {
-        const size = pixels.length * 3
-        const buf = new Uint8Array(size)
-        for (let i = 0; i < pixels.length; i++) {
-            buf[i * 3] = pixels[i].red
-            buf[i * 3 + 1] = pixels[i].green
-            buf[i * 3 + 2] = pixels[i].blue
-        }
-
-        return buf
     }
 }

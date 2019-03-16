@@ -1,7 +1,8 @@
 node_modules
 .DS_Store
 .DS_Store?
-thumb.db
-Thumb.db
+DS_Store
+thumbs.db
+Thumbs.db
 /*.gif
 /*.jpg
