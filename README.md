@@ -5,22 +5,7 @@ The GIF Encoder, which have a source code that easy to read. Totally based on do
 
 Encoding flow
 -------------
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
-a  
+![diagram](./diagram.png)
 
 
 Purpose
@@ -40,8 +25,8 @@ If you have any idea, make a issue or contact me.
 
 Results
 -------
- - Original image (jpeg)  
-![original](./example/test_image.jpg)
+ - Source image (jpeg)  
+![source](./example/test_image.jpg)
 
  - Uniform algorithm  
 ![uniform](./example/uniform_result.gif)
@@ -63,3 +48,6 @@ http://giflib.sourceforge.net/whatsinagif/index.html
 
 GIF Wikipedia  
 https://en.wikipedia.org/wiki/GIF
+
+Median Cut  
+http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/1994/9409/9409e/9409e.htm  

@@ -5,6 +5,11 @@ export class RGB {
     public index: number = 0
 }
 
+class Hist {
+    public count: number
+    public colors: []
+}
+
 export interface IQuantizationResult {
     globalColorTable: RGB[]
     globalColorTableSize: number // At least 2 up to 8.
@@ -12,6 +17,17 @@ export interface IQuantizationResult {
 }
 
 export class BaseQuant {
+    public static getHistogram(pixels: Uint8Array, dimension: number) {
+        for (let i = 0; i < pixels.length; i += dimension) {
+            const r = pixels[i]
+            const g = pixels[i + 1]
+            const b = pixels[i + 2]
+
+            const key = r + (g << 8) + (b << 16)
+
+        }
+    }
+
     public static fromBuffer(buf: Uint8Array, w: number, h: number, dimension: number): IQuantizationResult {
         throw Error("Not implemented!")
     }

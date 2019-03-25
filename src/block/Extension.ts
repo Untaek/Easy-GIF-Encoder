@@ -159,7 +159,7 @@ export class Extension {
         return block
     }
 
-    public static NetscapeLoopingApplicationExtension() {
+    public static Netscape2LoopingApplicationExtension() {
         const subblock = new Uint8Array(3)
         subblock[0] = 0x01 // Sub-block ID
         subblock[1] = 0x00 // Loop count ( 2bytes )

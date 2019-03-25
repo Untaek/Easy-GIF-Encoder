@@ -1,14 +1,15 @@
 export class Queue<T> {
+    /**
+     * For LZW binary buffer
+     */
     private data: Array<T>
     private front: number = 0
     private rear: number = 0
-    private capacity: number = 0
 
     length: number = 0
 
     constructor(size: number) {
         this.data = new Array(size)
-        this.capacity = size
     }
 
     push(value: T) {

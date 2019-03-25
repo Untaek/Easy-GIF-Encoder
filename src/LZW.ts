@@ -87,8 +87,6 @@ export class LZW {
         let byteIdx = 0 // 0 ~ 7
         let subBlockLength = 0
 
-        // 설계를 stream 으로 바꿔야 한다
-        // 구현을 위한 임시 용도
         const imageData: Uint8Array[] = []
 
         const nextPixel = () => {
@@ -140,12 +138,12 @@ export class LZW {
             }
         }
 
-        // LZW minimum code size 삽입
+        // Insert LZW minimum code size
         const lzwMinCodeSize = new Uint8Array(1)
         lzwMinCodeSize[0] = INIT_LZW_MIN_SIZE
         imageData.push(lzwMinCodeSize)
 
-        // Clear code 삽입
+        // Insert Clear code
         codeToSubblock(CLEAR_CODE)
 
         // init
@@ -154,6 +152,7 @@ export class LZW {
         colorTable.indicator.index = indexStream[0]
 
         // loop
+        // performance critical
         while (nextPixel() < EOF) {
             const idx = indexStream[current]
             const lookup = colorTable.indicator.node

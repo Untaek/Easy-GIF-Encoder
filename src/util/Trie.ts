@@ -1,4 +1,7 @@
 export class LZWTrie {
+    /**
+     * For LZW code stream
+     */
     public root: TrieNode
     public indicator: TrieNode
     public size: number
