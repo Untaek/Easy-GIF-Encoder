@@ -1,17 +1,24 @@
+import { Histogram } from "../util/Histogram"
 import { BaseQuant, IQuantizationResult, RGB } from "./BaseQuant"
 
-class Cube extends RGB {
-    public bucket: Uint32Array
+class Cube {
     public rmin: number
     public rmax: number
     public gmin: number
     public gmax: number
     public bmin: number
     public bmax: number
+    constructor(hist: Histogram, start: number, end: number) {
+        const rRange = hist.getRedRange(start, end)
+        const gRange = hist.getGreenRange(start, end)
+        const bRange = hist.getBlueRange(start, end)
 
-    constructor(size: number) {
-        super()
-        this.bucket = new Uint32Array(size)
+        this.rmin = rRange.min
+        this.rmax = rRange.max
+        this.gmin = gRange.min
+        this.gmax = gRange.max
+        this.bmin = bRange.min
+        this.bmax = bRange.max
     }
 }
 
@@ -24,10 +31,9 @@ export class MedianCut extends BaseQuant {
          * 4. repeat
          */
 
-        const cube = new Cube(buf.length)
+        const histogram = new Histogram(buf)
+        const cube = new Cube(histogram, 0, histogram.getColorsTotal())
 
         return undefined
     }
-
-    private static recursive(cube: Cube) {}
 }
