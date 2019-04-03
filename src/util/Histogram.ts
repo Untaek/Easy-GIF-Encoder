@@ -1,4 +1,5 @@
 export class Histogram {
+    public c = new Array(3)
 
     /**
      * For color histogram
@@ -21,40 +22,31 @@ export class Histogram {
     }
 
     public getRedRange(start: number, end: number) {
-        return this.getRange(start, end, 0)
+        return this.getRange(start, end, ColorType.R)
     }
 
     public getGreenRange(start: number, end: number) {
-        return this.getRange(start, end, 1)
+        return this.getRange(start, end, ColorType.G)
     }
 
     public getBlueRange(start: number, end: number) {
-        return this.getRange(start, end, 2)
+        return this.getRange(start, end, ColorType.B)
     }
 
     public getColorsTotal() {
         return this.colors
     }
 
-    private getRange(start: number, end: number, type: number) {
-        const func = () => {
-            switch (type) {
-                case 0: return (val: number) => (val >> 16) & 0xFF
-                case 1: return (val: number) => (val >> 8) & 0xFF
-                case 2: return (val: number) => (val) & 0xFF
-            }
-        }
-
-        const f = func()
-        let min = 0
+    private getRange(start: number, end: number, type: ColorType) {
         let max = 0
+        let min = 0
 
         for (let i = start; i <= end; i++) {
-            if (f(i) > 0) { min = i; break }
+            if (this.c[type][i] > 0) { min = i; break }
         }
 
         for (let i = end; i >= start; i--) {
-            if (f(i) > 0) { max = i; break }
+            if (this.c[type][i] > 0) { max = i; break }
         }
 
         return {
@@ -63,15 +55,23 @@ export class Histogram {
     }
 
     private init(buf: Uint8Array) {
+        for (let i = 0; i < 3; i++) {
+            this.c[i] = new Uint32Array(255)
+        }
+
         for (let i = 0; i < buf.length; i += 3) {
-            if (this._hist[this.idx(buf[i], buf[i + 1], buf[i + 2])]) {
-                this.colors++
-            }
             this._hist[this.idx(buf[i], buf[i + 1], buf[i + 2])]++
+            this.c[0][buf[i]]++
+            this.c[1][buf[i + 1]]++
+            this.c[2][buf[i + 2]]++
         }
     }
 
     private idx(r: number, g: number, b: number) {
         return (r << 16) + (g << 8) + b
     }
+}
+
+export enum ColorType {
+    R, G, B,
 }

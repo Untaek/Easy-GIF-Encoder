@@ -1,4 +1,4 @@
-import { Histogram } from "../util/Histogram"
+import { ColorType, Histogram } from "../util/Histogram"
 import { BaseQuant, IQuantizationResult, RGB } from "./BaseQuant"
 
 class Cube {
@@ -45,13 +45,43 @@ export class MedianCut extends BaseQuant {
         const g = cube.gmax - cube.gmin
         const b = cube.bmax - cube.bmin
 
-        return r >= g ? (r >= b ? 0 : 2) : (g >= b ? 1 : 2)
+        const type = r >= g ? (r >= b ? 0 : 2) : (g >= b ? 1 : 2)
+        return ColorType[type]
     }
 
-    private static median(cube: Cube) {
-        if (cube.axis === 0) {
+    private static median(cube: Cube, hist: Histogram) {
+        let total = 0
+        let medCount = 0
+        let min = 0
+        let max = 0
+        let median = 0
 
+        if (cube.axis === ColorType.R) {
+            min = cube.rmin
+            max = cube.rmax
+        } else if (cube.axis === ColorType.G) {
+            min = cube.gmin
+            max = cube.gmax
+        } else {
+            min = cube.bmin
+            max = cube.bmax
         }
+
+        for (let i = min; i < max; i++) {
+            total += hist.c[cube.axis][i]
+        }
+
+        total /= 2
+
+        for (let i = min; i < max; i++) {
+            medCount += hist.c[cube.axis][i]
+            if (medCount > total) {
+                median = i
+                break
+            }
+        }
+
+        return median
     }
 
     private static split(cube: Cube) {
