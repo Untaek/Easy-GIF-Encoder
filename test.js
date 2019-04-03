@@ -12,7 +12,7 @@ console.log(bitmap.width)
 console.log(bitmap.height)
 
 let startAt = Date.now()
-gif.GIFStream.encode('result.gif', bitmap.data, bitmap.width, bitmap.height, {method: 'uniform'})
+gif.GIFStream.encode('result.gif', bitmap.data, bitmap.width, bitmap.height, {method: process.argv[3]})
 console.log(`Structed GIF Encoder has taken ${Date.now() - startAt} ms`)
 
 // gif-encoder lib

@@ -4,6 +4,7 @@ import { LogicalScreen } from "./block/LogicalScreen"
 import { SimpleBlock } from "./block/SimpleBlock"
 import { TableBasedImage } from "./block/TableBasedImage"
 import { LZW } from "./LZW"
+import { MedianCut } from "./quantization/MedianCut";
 import { NeuQuant } from "./quantization/NeuQuant"
 import { UniformQuant } from "./quantization/UniformQuant"
 
@@ -88,6 +89,7 @@ export class GIFStream {
         switch (options.method) {
             case "neu": return NeuQuant
             case "uniform": return UniformQuant
+            case "mediancut": return MedianCut
             default: return UniformQuant
         }
     }

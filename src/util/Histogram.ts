@@ -9,8 +9,8 @@ export class Histogram {
     private _hist = new Uint32Array(1 << 24)
     private colors: number = 0
 
-    constructor(buf: Uint8Array) {
-        this.init(buf)
+    constructor(buf: Uint8Array, dimension: number) {
+        this.init(buf, dimension)
     }
 
     public getCount(r: number, g: number, b: number) {
@@ -54,12 +54,12 @@ export class Histogram {
         }
     }
 
-    private init(buf: Uint8Array) {
+    private init(buf: Uint8Array, dimension: number) {
         for (let i = 0; i < 3; i++) {
             this.c[i] = new Uint32Array(255)
         }
 
-        for (let i = 0; i < buf.length; i += 3) {
+        for (let i = 0; i < buf.length; i += dimension) {
             this._hist[this.idx(buf[i], buf[i + 1], buf[i + 2])]++
             this.c[0][buf[i]]++
             this.c[1][buf[i + 1]]++
