@@ -8,6 +8,9 @@ class Cube {
     public gmax: number
     public bmin: number
     public bmax: number
+    public axis: number
+    public median: number
+
     constructor(hist: Histogram, start: number, end: number) {
         const rRange = hist.getRedRange(start, end)
         const gRange = hist.getGreenRange(start, end)
@@ -35,5 +38,23 @@ export class MedianCut extends BaseQuant {
         const cube = new Cube(histogram, 0, histogram.getColorsTotal())
 
         return undefined
+    }
+
+    private static longest(cube: Cube) {
+        const r = cube.rmax - cube.rmin
+        const g = cube.gmax - cube.gmin
+        const b = cube.bmax - cube.bmin
+
+        return r >= g ? (r >= b ? 0 : 2) : (g >= b ? 1 : 2)
+    }
+
+    private static median(cube: Cube) {
+        if (cube.axis === 0) {
+
+        }
+    }
+
+    private static split(cube: Cube) {
+
     }
 }
