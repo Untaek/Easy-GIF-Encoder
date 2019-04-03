@@ -31,7 +31,7 @@ Results
  - Uniform  
 ![uniform](./example/uniform_result.gif)
 
- - Mediancut (still improving)
+ - Mediancut (still improving)  
 ![mediancut](./example/mediancut_result.gif)
 
 Contact
