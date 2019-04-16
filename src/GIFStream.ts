@@ -85,7 +85,7 @@ export class GIFStream {
         ws.close()
     }
 
-    public static encodeToArray(path: string, pixels: Uint8Array, w: number, h: number, options: IQuantizationOptions) {
+    public static encodeToArray(pixels: Uint8Array, w: number, h: number, options: IQuantizationOptions) {
         const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
         const dimension = pixels.length / w / h
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h, dimension)
@@ -143,3 +143,10 @@ export class GIFStream {
         }
     }
 }
+
+declare global {
+    // tslint:disable-next-line: interface-name
+    interface Window { GIFStream: any }
+}
+
+window.GIFStream = GIFStream

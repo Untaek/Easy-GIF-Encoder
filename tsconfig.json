@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
-        "module": "amd",
-        "target": "es3",
-        "sourceMap": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "module": "commonjs",
+        "target": "es5",
+        "sourceMap": false,
         "rootDir": "src",
-        "outDir": "lib",
-        "outFile": "lib/libgif.js"
+        "outDir": "lib"
     }
 }
