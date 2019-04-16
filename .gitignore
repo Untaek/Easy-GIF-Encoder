@@ -6,3 +6,5 @@ thumbs.db
 Thumbs.db
 /*.gif
 /*.jpg
+src/**/*.js
+lib

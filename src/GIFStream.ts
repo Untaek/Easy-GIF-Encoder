@@ -4,7 +4,7 @@ import { LogicalScreen } from "./block/LogicalScreen"
 import { SimpleBlock } from "./block/SimpleBlock"
 import { TableBasedImage } from "./block/TableBasedImage"
 import { LZW } from "./LZW"
-import { MedianCut } from "./quantization/MedianCut";
+import { MedianCut } from "./quantization/MedianCut"
 import { NeuQuant } from "./quantization/NeuQuant"
 import { UniformQuant } from "./quantization/UniformQuant"
 
@@ -83,6 +83,55 @@ export class GIFStream {
         ws.write(Buffer.from(SimpleBlock.BlockTerminator()))
         ws.write(Buffer.from(SimpleBlock.Trailer()))
         ws.close()
+    }
+
+    public static encodeToArray(path: string, pixels: Uint8Array, w: number, h: number, options: IQuantizationOptions) {
+        const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
+        const dimension = pixels.length / w / h
+        const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h, dimension)
+
+        const header = SimpleBlock.Header()
+        const lsd = LogicalScreen.LogicalScreenDescriptor(w, h, quantizationResult.globalColorTable)
+        const gct = LogicalScreen.GlobalColorTable(quantizationResult.globalColorTable)
+        const gce = Extension.GraphicControlExtension()
+        const id = TableBasedImage.ImageDescriptor(w, h)
+        const payloads = LZW.compress(quantizationResult)
+        const terminator = SimpleBlock.BlockTerminator()
+        const trailer = SimpleBlock.Trailer()
+
+        const payloadLength = payloads
+                    .map((c) => c.length)
+                    .reduce((a, c) => a + c, 0)
+
+        const payload = payloads.reduce((a, c) => {
+            a.p.set(c, a.o)
+            a.o += c.length
+            return a
+        }, {p: new Uint8Array(payloadLength), o: 0})
+
+        const result = new Uint8Array(
+            header.length
+            + lsd.length
+            + gct.length
+            + gce.length
+            + id.length
+            + payloadLength
+            + terminator.length
+            + trailer.length,
+        )
+
+        let offset = 0
+
+        result.set(header, offset); offset += header.length
+        result.set(lsd, offset); offset += lsd.length
+        result.set(gct, offset); offset += gct.length
+        result.set(gce, offset); offset += gce.length
+        result.set(id, offset); offset += id.length
+        result.set(payload.p, offset); offset += payloadLength
+        result.set(terminator, offset); offset += terminator.length
+        result.set(trailer, offset)
+
+        return result
     }
 
     private static chooseQuantizationAlgorithm(options: IQuantizationOptions) {
