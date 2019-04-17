@@ -1,12 +1,12 @@
 Structed GIF Encoder
 ====================
 
-The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript. I planned to implement various quantization algorithms.
+The GIF Encoder, which have a source code that easy to read. Totally based on documentation 'spec-gif89a'. Source code is written by Typescript. I planned to implement various quantization algorithms.  
+This encoder support browser from now on.
 
 Encoding flow
 -------------
 ![diagram](./diagram.png)
-
 
 Purpose
 -------
@@ -20,7 +20,7 @@ Prerequsition
 
 Notice
 ------
-I am not sure about performance. I will keep improve it.  
+I am not sure about performance. I will keep improve it.
 If you have any idea, make a issue or contact me.
 
 Results
@@ -33,6 +33,10 @@ Results
 
  - Mediancut (still improving)  
 ![mediancut](./example/mediancut_result.gif)
+
+Build (Browser support)
+-----
+```npm install && npx tsc && npx gulp```
 
 Contact
 -------

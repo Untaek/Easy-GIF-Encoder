@@ -18,7 +18,7 @@ gulp.task("default", function () {
     })
     .plugin(tsify)
     .bundle()
-    .pipe(source('bundle.js'))
+    .pipe(source('libgif.js'))
     .pipe(buffer())
     .pipe(uglify())
     .pipe(gulp.dest('lib'));

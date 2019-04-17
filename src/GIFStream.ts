@@ -86,6 +86,8 @@ export class GIFStream {
     }
 
     public static encodeToArray(pixels: Uint8Array, w: number, h: number, options: IQuantizationOptions) {
+        const startAt = Date.now()
+
         const quantizationAlgorithm = this.chooseQuantizationAlgorithm(options)
         const dimension = pixels.length / w / h
         const quantizationResult = quantizationAlgorithm.fromBuffer(pixels, w, h, dimension)
@@ -131,7 +133,11 @@ export class GIFStream {
         result.set(terminator, offset); offset += terminator.length
         result.set(trailer, offset)
 
-        return result
+        return {
+            colorTable: quantizationResult.globalColorTable,
+            data: result,
+            elapsedTime: Date.now() - startAt,
+        }
     }
 
     private static chooseQuantizationAlgorithm(options: IQuantizationOptions) {
