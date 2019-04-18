@@ -42,7 +42,7 @@ import { UniformQuant } from "./quantization/UniformQuant"
  *
  */
 
-interface IQuantizationOptions {
+export interface IQuantizationOptions {
     method: "uniform" | "neu" | "mediancut" | "kmeans"
 }
 export class GIFStream {
@@ -152,7 +152,13 @@ export class GIFStream {
 
 declare global {
     // tslint:disable-next-line: interface-name
-    interface Window { GIFStream: any }
+    interface Global { GIFStream: GIFStream }
+    interface Window { GIFStream: GIFStream }
 }
 
-window.GIFStream = GIFStream
+if (typeof window !== "undefined") {
+    window.GIFStream = GIFStream
+}
+if (typeof global !== "undefined") {
+    global.GIFStream = GIFStream
+}

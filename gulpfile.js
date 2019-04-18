@@ -11,7 +11,7 @@ var buffer = require('vinyl-buffer');
 gulp.task("default", function () {
     return browserify({
         basedir: '.',
-        debug: false,
+        debug: true,
         entries: ['src/GIFStream.ts'],
         cache: {},
         packageCache: {}

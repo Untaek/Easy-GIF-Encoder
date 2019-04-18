@@ -72,9 +72,9 @@ export class UniformQuant extends BaseQuant {
         }
     }
 
-    private static RED_DIVISION = 8
-    private static GREEN_DIVISION = 9
-    private static BLUE_DIVISION = 9
+    private static RED_DIVISION = 7
+    private static GREEN_DIVISION = 6
+    private static BLUE_DIVISION = 6
     private static COLOR_SPACE
         = UniformQuant.RED_DIVISION *
         UniformQuant.GREEN_DIVISION *
