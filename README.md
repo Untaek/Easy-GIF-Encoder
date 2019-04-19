@@ -18,25 +18,25 @@ Prerequsition
 -------------
 - Latest version of Node.js.
 
-Notice
-------
-I am not sure about performance. I will keep improve it.
-If you have any idea, make a issue or contact me.
-
 Results
 -------
  - Source image (jpeg)  
-![source](./example/test_image.jpg)
+![source](./samples/test_image.jpg)
 
  - Uniform  
-![uniform](./example/uniform_result.gif)
+![uniform](./samples/uniform_result.gif)
 
  - Mediancut (still improving)  
-![mediancut](./example/mediancut_result.gif)
+![mediancut](./samples/mediancut_result.gif)
 
 Build (Browser support)
 -----
 ```npm install && npx tsc && npx gulp```
+
+Notice
+------
+I am not sure about performance. And may there is some glitches on encoding result. I will keep improve it.
+If you have any idea, make a issue or contact me.
 
 Contact
 -------
